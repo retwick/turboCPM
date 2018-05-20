@@ -66,13 +66,21 @@ class Graph {
     insert_edge(edge.first, edge.second, weight);
   }
 
+  void insert_vertex(int u){
+    Vertices.insert(u);
+  }
+
   //------------getter functions---------------------
   set < int > vertices() {
     return Vertices;
   }
 
+  set <pair<int, int> > get_edges(){
+    return Edges;
+  }
+
   // returns the adjacency list (a set) of a vertex.
-  set < int > adjList(int vertex){ 
+  set < int > get_adjList(int vertex){ 
     return AdjList_of_Vertices[vertex];
   }
 
@@ -127,26 +135,38 @@ class Graph {
 		int V = Nvertices;
 	    // Create a vector to store indegrees of all
 	    // vertices. Initialize all indegrees as 0.
-	    vector<int> in_degree(V, 0);
+	    vector<int> in_degree(V+1, 0);
 	 
 	    // Traverse adjacency lists to fill indegrees of
 	    // vertices.  This step takes O(V+E) time
 
 	    //for every (u,v) e E, in_degree[v]++;
+      for(pair<int, int> p : get_edges()){
+        in_degree[p.second]++;
+      }
+      /*
 	    for (int u=0; u<V; u++)
 	    {	  
 	        list<int>::iterator itr;
 	        for (itr = adj[u].begin(); itr != adj[u].end(); itr++)
 	             in_degree[*itr]++;
 	    }
-	 
+	    */
 	    // Create an queue and enqueue all vertices with
 	    // indegree 0
 	    queue<int> q;
+
+      //change loop
+      for(auto u: vertices()){
+        if(!in_degree[u]){
+          q.push(u);
+        }
+      }
+      /*
 	    for (int i = 0; i < V; i++)
 	        if (in_degree[i] == 0)
 	            q.push(i);
-	 
+	    */
 	    // Initialize count of visited vertices
 	    int cnt = 0;
 	 
@@ -167,13 +187,18 @@ class Graph {
 	        // Iterate through all its neighbouring nodes
 	        // of dequeued node u and decrease their in-degree
 	        // by 1
-	        list<int>::iterator itr;
+          	        
+          for(int v: get_adjList(u)){
+            if(--in_degree[v] == 0)
+              q.push(v);
+          }
+          /*
 	        for (itr = adj[u].begin(); itr != adj[u].end(); itr++)
 	 
 	            // If in-degree becomes zero, add it to queue
 	            if (--in_degree[*itr] == 0)
 	                q.push(*itr);
-	 
+	        */
 	        cnt++;
 	    }
 	 
@@ -219,7 +244,7 @@ void BFS(Graph & g, int source) {
     auto u = q.front();
     q.pop();
 
-    for (auto v: g.adjList(u)) {
+    for (auto v: g.get_adjList(u)) {
       if (g.is_visited(v) == false) {
         g.visit(v);
         g.set_parent(v, u);
@@ -229,9 +254,10 @@ void BFS(Graph & g, int source) {
   }
 }
 
-void print_graph(graph &g){
-  for (int i = 1; i <= n; i++) {
-  	set < int > neigh = g.adjList(i);
+void print_graph(Graph &g){
+  cout<<"print\n";
+  for (int i:g.vertices()) {
+  	set < int > neigh = g.get_adjList(i);
     cout<<i<<" : ";
     for(auto v:neigh){
     	cout<<v<<"("<<g.get_weight(i,v)<<") ";
@@ -246,6 +272,7 @@ void print_graph(graph &g){
 
 
 int main() {
+
   int n, e;
   cout<<"Enter n, m:";
   cin >> n >> e;
@@ -255,8 +282,13 @@ int main() {
     int u, v, w;
     cout<<"enter u,v,w:";
     cin >> u >> v >> w;
+    g.insert_vertex(u);
+    g.insert_vertex(v);
     g.insert_edge(u, v, w);
   }
 
+  g.topologicalSort();
+  cout<<endl;
+  print_graph(g);
   return 0;
 }
