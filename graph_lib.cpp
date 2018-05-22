@@ -1,10 +1,6 @@
 /*
-A simple C++ class - "Graph". 
 
 The Graph class can be used to store and manipulate simple directed / non-directed graphs.
-
-At this moment, multigraphs are not supported. Also, member functions for deletion 
-of edges have not been introduced yet.
 
 Excessive use of the STL (Standard Template Library) can be observed in the class.
 */
@@ -208,18 +204,52 @@ struct attribute {
     }
     
     //find dest vertex --out_degree=0
-    //vector<int> out_degree(V, 0);
+    vector<int> out_degree(Nvertices, 0);
     vector<int> in_degree(Nvertices , 0);
     
 
     //for every (u,v) e E, in_degree[v]++;
-    for(pair<int, int> p : get_edges()){
-      in_degree[p.second]++;
+    for(pair<int, int> p : Edges){
+      out_degree[p.first]++;
+      in_degree[p.second]++;      
     }
 
+    //-------------------------------------------------
     //find source vertex -- in_degree = 0
-    auto it = find_if(in_degree.begin(), in_degree.end(), [](int i){ return !(i); });
-    
+    //finds first index s.t. in degree is zero
+    auto it_source = find_if(in_degree.begin(), in_degree.end(), [](int i){ return !(i); });
+    int souce_vertex = it_source - in_degree.begin();
+
+    auto it_sink = find_if(out_degree.begin(), out_degree.end(), [](int i){ return !(i); });
+    int sink_vertex = it_sink - out_degree.begin();
+
+
+    cout<<"source vertex: "<<souce_vertex<<" sink_vertex: "<<sink_vertex<<endl;
+    //---------------------------------------------------
+    //could be removed if we can prove that source vertex is topo_order[0] and 
+    //sink is topo_order[n-1];
+    //---------------------------------------------------
+
+    Attributes[top_order[0]].early_start = 0;
+    //for(int v:AdjList_of_Vertices[0])
+    Attributes[top_order[0]].early_finish = 0;
+    for(int u: top_order ){
+      for(int v: AdjList_of_Vertices[u] ){
+        
+        if(Attributes[v].early_start < Attributes[u].early_start + get_weight(u,v)){
+          Attributes[v].early_start = Attributes[u].early_start + get_weight(u,v);
+          //Attributes[v].early_finish = Attributes[u].early_finish + get_weight(u,v);
+          Attributes[v].parent = u;
+        }
+
+      }
+    }
+
+    //print early starts
+    cout<<"vertex\tES\t\n";
+    for(int u: top_order){
+      cout<<"vertex "<<u<<"\t"<<Attributes[u].early_start<<endl;
+    }
   }
 
 
@@ -292,6 +322,8 @@ int main() {
   g.topologicalSort();
   cout<<endl;
   print_graph(g);
+  cout<<endl;
+  g.critical_path();
   return 0;
 }
 
