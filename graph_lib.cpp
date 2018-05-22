@@ -24,12 +24,14 @@ class Graph {
   int Nvertices, Nedges;                                          //n,m
   bool isDirected;
 
-  vector<int> topological_order;
+  vector<int> top_order;
   
-  struct attribute {
+struct attribute {
     bool visited = false;
     int distance = INT_MAX;
     int parent = 0;
+
+    int early_start, early_finish, late_start, late_finish;
   };
   vector < attribute > Attributes;
 
@@ -40,7 +42,7 @@ class Graph {
 
     set < int > s = {};
     attribute atb;
-
+    Attributes.push_back(atb);                                      //dummy atribute to start index from 1
     //initialize graph
     for (int i = 1; i <= Nvertices; i++) {
       AdjList_of_Vertices.insert(make_pair(i, s));                  //initialize adjaceny list
@@ -111,6 +113,10 @@ class Graph {
     return Attributes[u].parent;
   }
 
+  vector<int> get_top_order(){
+    return top_order;
+  }
+
   //-----------------------setter functions---------------------
 
   void visit(int u) {
@@ -132,93 +138,100 @@ class Graph {
 	// The function to do Topological Sort.
 	void topologicalSort()
 	{
-		int V = Nvertices;
-	    // Create a vector to store indegrees of all
-	    // vertices. Initialize all indegrees as 0.
-	    vector<int> in_degree(V+1, 0);
-	 
-	    // Traverse adjacency lists to fill indegrees of
-	    // vertices.  This step takes O(V+E) time
+	  int V = Nvertices;
+    // Create a vector to store indegrees of all vertices. Initialize all indegrees as 0.
+    vector<int> in_degree(V+1, 0);
+ 
+    // Traverse adjacency lists to fill indegrees of vertices.  This step takes O(V+E) time
 
-	    //for every (u,v) e E, in_degree[v]++;
-      for(pair<int, int> p : get_edges()){
-        in_degree[p.second]++;
+    //for every (u,v) e E, in_degree[v]++;
+    for(pair<int, int> p : get_edges()){
+      in_degree[p.second]++;
+    }
+    
+    // Create an queue and enqueue all vertices with indegree 0
+    queue<int> q;
+    for(int u: vertices()){
+      if(!in_degree[u]){
+        q.push(u);
       }
-      /*
-	    for (int u=0; u<V; u++)
-	    {	  
-	        list<int>::iterator itr;
-	        for (itr = adj[u].begin(); itr != adj[u].end(); itr++)
-	             in_degree[*itr]++;
-	    }
-	    */
-	    // Create an queue and enqueue all vertices with
-	    // indegree 0
-	    queue<int> q;
+    }
+    
+    // Initialize count of visited vertices
+    int cnt = 0;
+ 	    
+    // One by one dequeue vertices from queue and enqueue
+    // adjacents if indegree of adjacent becomes 0
+    while (!q.empty())
+    {
+      // Extract front of queue (or perform dequeue)
+      // and add it to topological order
+      int u = q.front();
+      q.pop();
+      top_order.push_back(u);
 
-      //change loop
-      for(auto u: vertices()){
-        if(!in_degree[u]){
-          q.push(u);
-        }
+      // Iterate through all its neighbouring nodes
+      // of dequeued node u and decrease their in-degree
+      // by 1
+      	        
+      for(int v: get_adjList(u)){
+        if(--in_degree[v] == 0)
+          q.push(v);
       }
-      /*
-	    for (int i = 0; i < V; i++)
-	        if (in_degree[i] == 0)
-	            q.push(i);
-	    */
-	    // Initialize count of visited vertices
-	    int cnt = 0;
-	 
-	    // Create a vector to store result (A topological
-	    // ordering of the vertices)
-	    vector <int> top_order;
-	 
-	    // One by one dequeue vertices from queue and enqueue
-	    // adjacents if indegree of adjacent becomes 0
-	    while (!q.empty())
-	    {
-	        // Extract front of queue (or perform dequeue)
-	        // and add it to topological order
-	        int u = q.front();
-	        q.pop();
-	        top_order.push_back(u);
-	 
-	        // Iterate through all its neighbouring nodes
-	        // of dequeued node u and decrease their in-degree
-	        // by 1
-          	        
-          for(int v: get_adjList(u)){
-            if(--in_degree[v] == 0)
-              q.push(v);
-          }
-          /*
-	        for (itr = adj[u].begin(); itr != adj[u].end(); itr++)
-	 
-	            // If in-degree becomes zero, add it to queue
-	            if (--in_degree[*itr] == 0)
-	                q.push(*itr);
-	        */
-	        cnt++;
-	    }
+      
+      cnt++;
+	  }
 	 
 	    // Check if there was a cycle
-	    if (cnt != V)
-	    {
-	        cout << "There exists a cycle in the graph\n";
-	        return;
-	    }
+    if (cnt != V){
+      cout << "There exists a cycle in the graph\n";
+      return;
+    }
 	 
-	    // Print topological order
-	    for (int i=0; i<top_order.size(); i++)
-	        cout << top_order[i] << " ";
-	    cout << endl;
+    // Print topological order
+    for (int i=0; i<top_order.size(); i++)
+        cout << top_order[i] << " ";
+    cout << endl;
 	}  
 
 
+  void critical_path(){
+    /*
+
+    Design
+
+    find the topological order of the graph
+
+    Initially all the nodes will be marked white denoting it’s not traversed.
+
+    The method dfsVisit (Graph g, Vertex u) is implemented to check whether the graph is visited or not.
+
+    The color is changed to Gray when the node is being visited, and marked black when the node is visited.
+
+    Add this to a List of Vertices that in turn gives us the topological order.
+
+    Enumerate all paths in a DAG from start to end enumeratePaths (Vertex u, index).
+
+    HashMap is maintained for all paths along with the index.
+
+    EC is calculated by comparing all the incoming edges to the vertex v and by taking the maximum value of all incoming edges.
+
+    LC is calculated by comparing all the incoming edges to the vertex v and take the minimum value of all incoming edges for which, we need to reverse the topological order to traverse back
+
+    For every edge present in the path, check for the critical edge (lc = ec) and add them to array of vertices.
+
+    Iterator over them to find all critical paths, its length and print them.
+
+    */
+
+    //for every u e V, ES=0, EF=int min
+
+    for(int u:vertices){
+      Attributes[u].early_finish = 0;
+    }
 
 
-
+  }
 
 
 };
@@ -292,3 +305,4 @@ int main() {
   print_graph(g);
   return 0;
 }
+
