@@ -196,41 +196,30 @@ struct attribute {
 
 
   void critical_path(){
-    /*
 
-    Design
+    //for every u e V, ES=int_min, EF=int min
 
-    find the topological order of the graph
+    for(int u: Vertices){
+      Attributes[u].early_finish = INT_MIN;
+      Attributes[u].early_start = INT_MIN;
 
-    Initially all the nodes will be marked white denoting it’s not traversed.
+      Attributes[u].late_finish = INT_MAX;
+      Attributes[u].late_start = INT_MAX;
+    }
+    
+    //find dest vertex --out_degree=0
+    //vector<int> out_degree(V, 0);
+    vector<int> in_degree(Nvertices , 0);
+    
 
-    The method dfsVisit (Graph g, Vertex u) is implemented to check whether the graph is visited or not.
-
-    The color is changed to Gray when the node is being visited, and marked black when the node is visited.
-
-    Add this to a List of Vertices that in turn gives us the topological order.
-
-    Enumerate all paths in a DAG from start to end enumeratePaths (Vertex u, index).
-
-    HashMap is maintained for all paths along with the index.
-
-    EC is calculated by comparing all the incoming edges to the vertex v and by taking the maximum value of all incoming edges.
-
-    LC is calculated by comparing all the incoming edges to the vertex v and take the minimum value of all incoming edges for which, we need to reverse the topological order to traverse back
-
-    For every edge present in the path, check for the critical edge (lc = ec) and add them to array of vertices.
-
-    Iterator over them to find all critical paths, its length and print them.
-
-    */
-
-    //for every u e V, ES=0, EF=int min
-
-    for(int u:vertices){
-      Attributes[u].early_finish = 0;
+    //for every (u,v) e E, in_degree[v]++;
+    for(pair<int, int> p : get_edges()){
+      in_degree[p.second]++;
     }
 
-
+    //find source vertex -- in_degree = 0
+    auto it = find_if(in_degree.begin(), in_degree.end(), [](int i){ return !(i); });
+    
   }
 
 
