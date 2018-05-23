@@ -13,7 +13,7 @@ class Graph {
   private:
   set < int > Vertices;                                           //vertex index starts from 1
   set < pair < int, int > > Edges;                                //<u,v>
-  map < pair < int, int > , int > Weight_of_Edges;                //<(u,v) , w>
+  //map < pair < int, int > , int > Weight_of_Edges;                //<(u,v) , w>
   map < int, set < int > > AdjList_of_Vertices;                   // <u, {v| (u,v)eE}
 
   public:
@@ -26,15 +26,14 @@ struct attribute {
     bool visited = false;
     int distance = INT_MAX;
     int parent = 0;
-
     int early_start, early_finish, late_start, late_finish;
+    int duration;
   };
   vector < attribute > Attributes;
 
-  Graph(int Nvertices, int Nedges, bool isDirected = false) {
+  Graph(int Nvertices, int Nedges) {
     this-> Nvertices = Nvertices;
-    this-> Nedges = Nedges;
-    this-> isDirected = isDirected;
+    this-> Nedges = Nedges;    
 
     set < int > s = {};
     attribute atb;
@@ -49,15 +48,11 @@ struct attribute {
   void new_edge(int u, int v, pair < int, int > edge, int weight) {
     AdjList_of_Vertices[u].insert(v);
     Edges.insert(edge);
-    Weight_of_Edges.insert(make_pair(edge, weight));
+    //Weight_of_Edges.insert(make_pair(edge, weight));
   }
 
   void insert_edge(int u, int v, int weight = 1) {
-    new_edge(u, v, make_pair(u, v), weight);
-
-    if (!isDirected) {
-      new_edge(v, u, make_pair(v, u), weight);
-    }
+    new_edge(u, v, make_pair(u, v), weight);  
   }
 
   void insert_edge(pair < int, int > edge, int weight = 1) {
@@ -82,20 +77,11 @@ struct attribute {
     return AdjList_of_Vertices[vertex];
   }
 
-  // returns the weight of th edge {u, v}
-  int get_weight(int u, int v){
-    return Weight_of_Edges[make_pair(u, v)];
-  }
-
-  int get_weight(pair < int, int > edge) {
-    return Weight_of_Edges[edge];
-  }
-
   bool is_visited(int u) {
     return Attributes[u].visited;
   }
 
-  bool get_distance(int u) {
+  int get_distance(int u) {
     return Attributes[u].distance;
   }
 
@@ -103,6 +89,10 @@ struct attribute {
     if (Edges.count(make_pair(u, v)) == 0) return false;
 
     return true;
+  }
+
+  int get_duration(int u){
+    return Attributes[u].duration;
   }
 
   int get_parent(int u) {
@@ -127,6 +117,9 @@ struct attribute {
     Attributes[child].parent = parent;
   }
 
+  void set_duration(int node, int duration){
+    Attributes[node].duration = duration;
+  }
 
   //-----------------------------------------
   //function from geeksforgeek
@@ -136,7 +129,7 @@ struct attribute {
 	{
 	  int V = Nvertices;
     // Create a vector to store indegrees of all vertices. Initialize all indegrees as 0.
-    vector<int> in_degree(V+1, 0);
+    vector<int> in_degree(V, 0);
  
     // Traverse adjacency lists to fill indegrees of vertices.  This step takes O(V+E) time
 
@@ -234,21 +227,34 @@ struct attribute {
     //for(int v:AdjList_of_Vertices[0])
     Attributes[top_order[0]].early_finish = 0;
     for(int u: top_order ){
+      //cout<<"compare: u "<<u<<"  ";
       for(int v: AdjList_of_Vertices[u] ){
-        
-        if(Attributes[v].early_start < Attributes[u].early_start + get_weight(u,v)){
-          Attributes[v].early_start = Attributes[u].early_start + get_weight(u,v);
-          //Attributes[v].early_finish = Attributes[u].early_finish + get_weight(u,v);
-          Attributes[v].parent = u;
+        //cout<<"v: "<<v<<" V.ES ";        
+        //cout<<Attributes[v].early_start <<" u.EF "<< Attributes[u].early_finish<<" v.D "<< Attributes[v].duration<<endl;
+        if(Attributes[v].early_start < Attributes[u].early_finish){
+          
+           Attributes[v].early_start = Attributes[u].early_finish;
+           Attributes[v].early_finish = Attributes[v].early_start + Attributes[v].duration;
+           Attributes[v].parent = u;
         }
 
       }
     }
 
+    //////////////-----------------------------------------------
+    //TODO
+    //rename early start to early finish
+    //scrap AoA . change to AoN network tweak attributes
+    // fraction of work completed
+    // change to particular point of time and recompute critical path
+    //
+    //-----------------------------//////////////////////////////
+
     //print early starts
-    cout<<"vertex\tES\t\n";
+    cout<<"vertex\t\tES\tEF\n";
     for(int u: top_order){
-      cout<<"vertex "<<u<<"\t"<<Attributes[u].early_start<<endl;
+      cout<<"vertex "<<u<<"\t"<<Attributes[u].early_start<<"\t"<<
+      Attributes[u].early_finish<<endl;
     }
   }
 
@@ -290,9 +296,9 @@ void print_graph(Graph &g){
   cout<<"print\n";
   for (int i:g.vertices()) {
   	set < int > neigh = g.get_adjList(i);
-    cout<<i<<" : ";
+    cout<<i<<"("<<g.get_duration(i)<<") : ";
     for(auto v:neigh){
-    	cout<<v<<"("<<g.get_weight(i,v)<<") ";
+    	cout<<v<<" ";
     }
     cout<<endl;
   }
@@ -308,15 +314,21 @@ int main() {
   int n, e;
   cout<<"Enter n, m:";
   cin >> n >> e;
-  Graph g(n, e, true);
+  Graph g(n, e);
 
   while (e--) {
-    int u, v, w;
-    cout<<"enter u,v,w:";
-    cin >> u >> v >> w;
+    int u, v;
+    cout<<"enter u,v:";
+    cin >> u >> v;
     g.insert_vertex(u);
     g.insert_vertex(v);
-    g.insert_edge(u, v, w);
+    g.insert_edge(u, v);
+  }
+
+  for(int i=0; i<n; ++i){
+    int dur;
+    cin>>dur;
+    g.set_duration(i, dur);
   }
 
   g.topologicalSort();
