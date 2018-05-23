@@ -124,6 +124,7 @@ struct attribute {
   //-----------------------------------------
   //function from geeksforgeek
 
+
 	// The function to do Topological Sort.
 	void topologicalSort()
 	{
@@ -242,12 +243,23 @@ struct attribute {
     }
 
     //////////////-----------------------------------------------
-    //TODO
-    //rename early start to early finish
-    //scrap AoA . change to AoN network tweak attributes
-    // fraction of work completed
+    //TODO   
+    // use sentinel nodes  and resultant nodes are of the form (0 -> duration -> 0)
+    // Invariant: ES(initial_sentinel) = EF(initial_sentinel) = ES(node)
+    // EF(node) = ES(terminal_sentinel) = EF(terminal_sentinel)
+
+    // Dependencies -- Start to Start, FInish to Finish (Start to Finish)    
+    // distinguish between initial and terminal sentinel nodes --> classify dependencies 
+    // -->corner case FF dependency. (automatically adjusts, if invariant is maintained)    
+
+    // Calendars
+    // use C++ boost library for calendar arithmetic 
+
+    // Constraints -- Must finish before, must start after, must start before
+
     // change to particular point of time and recompute critical path
-    //
+    
+    // Accouting for actual fraction of work completed
     //-----------------------------//////////////////////////////
 
     //print early starts
