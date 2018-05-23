@@ -1,9 +1,3 @@
-/*
-
-The Graph class can be used to store and manipulate simple directed / non-directed graphs.
-
-Excessive use of the STL (Standard Template Library) can be observed in the class.
-*/
 
 
 #include <bits/stdc++.h>
@@ -256,6 +250,8 @@ struct attribute {
     // use C++ boost library for calendar arithmetic 
 
     // Constraints -- Must finish before, must start after, must start before
+
+    //------
 
     // change to particular point of time and recompute critical path
     
