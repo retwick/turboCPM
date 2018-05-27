@@ -239,8 +239,10 @@ struct attribute {
     //////////////-----------------------------------------------
     //TODO   
     // use sentinel nodes  and resultant nodes are of the form (0 -> duration -> 0)
-    // Invariant: ES(initial_sentinel) = EF(initial_sentinel) = ES(node)
-    // EF(node) = ES(terminal_sentinel) = EF(terminal_sentinel)
+    // Invariant: ES(initial_sentinel) + offset = EF(initial_sentinel) = ES(node)
+    // EF(node) = ES(terminal_sentinel) + offset = EF(terminal_sentinel)
+
+    // dummy node to have duration = offset (not implemented)
 
     // Dependencies -- Start to Start, FInish to Finish (Start to Finish)    
     // distinguish between initial and terminal sentinel nodes --> classify dependencies 
@@ -320,13 +322,13 @@ void print_graph(Graph &g){
 int main() {
 
   int n, e;
-  cout<<"Enter n, m:";
+  //cout<<"Enter n, m:";
   cin >> n >> e;
   Graph g(n, e);
 
   while (e--) {
     int u, v;
-    cout<<"enter u,v:";
+    //cout<<"enter u,v:";
     cin >> u >> v;
     g.insert_vertex(u);
     g.insert_vertex(v);
