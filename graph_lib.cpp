@@ -13,7 +13,7 @@ class Graph {
   public:
   int Nvertices, Nedges;                                          //n,m
   bool isDirected;
-
+  
   vector<int> top_order;
   
 struct attribute {
@@ -22,6 +22,7 @@ struct attribute {
     int parent = 0;
     int early_start, early_finish, late_start, late_finish;
     int duration;
+    bool is_initial, is_terminal;
   };
   vector < attribute > Attributes;
 
