@@ -22,7 +22,7 @@ struct attribute {
     int parent = 0;
     int early_start, early_finish, late_start, late_finish;
     int duration;
-    bool is_initial, is_terminal;
+    bool is_initial = false, is_terminal=false;
   };
   vector < attribute > Attributes;
 
@@ -102,6 +102,14 @@ struct attribute {
 
   vector<int> get_top_order(){
     return top_order;
+  }
+
+  bool is_terminal(int v){
+    return Attributes[v].is_terminal;
+  }
+
+  bool is_initial(int v){
+    return Attributes[v].is_initial;
   }
 
   //-----------------------setter functions---------------------
@@ -194,11 +202,41 @@ struct attribute {
 
   void pull_back(int node, int ES){
     cout<<"pull_back on "<<node<<"\n";
-    for(int v: Rev_AdjList[node]){
-      Attributes[v].early_start = max(ES - Attributes[v].duration, Attributes[v].early_start);
-      Attributes[v].early_finish = max(ES, Attributes[v].early_finish);
+    if(Rev_AdjList[node].empty()){
+      cout<<"start forward_parse at :"<<node<<endl;
+      forward_parse(node, ES);
+    }
+    for(int v: Rev_AdjList[node]){      
       pull_back(v,ES - Attributes[v].duration);
     }    
+  }
+
+  void forward_parse(int u, int start = 0){
+    if(start != 0){
+      Attributes[u].early_start = start;
+      Attributes[u].early_finish = start + Attributes[u].duration;
+    }
+    for(int v: AdjList_of_Vertices[u]){
+      if(Attributes[v].early_start < Attributes[u].early_finish){
+
+        Attributes[v].early_start = Attributes[u].early_finish;
+        Attributes[v].early_finish = Attributes[v].early_start + Attributes[v].duration;
+        Attributes[v].parent = u;
+
+        if( Attributes[u].is_terminal&&Attributes[v].is_terminal || 
+           Attributes[u].is_initial &&Attributes[v].is_terminal ){
+        //need to remove distance between dummy node and actual node
+
+        //find farthest node(x) from current node(v) with edges reversed.
+        //if many such x exists, do for all x
+        //also find supposed to be distance from x to v,by adding all node weights in the path
+        //set start date of x to start date of v - distance(x,v)
+
+        pull_back(v, Attributes[v].early_start);      
+        }
+        forward_parse(v);
+      }
+    }
   }
 
   void critical_path(){
@@ -246,30 +284,10 @@ struct attribute {
     Attributes[top_order[0]].early_finish = 0;
     for(int u: top_order ){
       //cout<<"compare: u "<<u<<"  ";
-      for(int v: AdjList_of_Vertices[u] ){
-        //cout<<"v: "<<v<<" V.ES ";        
-        //cout<<Attributes[v].early_start <<" u.EF "<< Attributes[u].early_finish<<" v.D "<< Attributes[v].duration<<endl;
-        if(Attributes[v].early_start < Attributes[u].early_finish){
-          
-           Attributes[v].early_start = Attributes[u].early_finish;
-           Attributes[v].early_finish = Attributes[v].early_start + Attributes[v].duration;
-           Attributes[v].parent = u;
-
-           if( Attributes[u].is_terminal&&Attributes[v].is_terminal || 
-               Attributes[u].is_initial &&Attributes[v].is_terminal ){
-            //need to remove distance between dummy node and actual node
-            
-            //find farthest node(x) from current node(v) with edges reversed.
-            //if many such x exists, do for all x
-            //also find supposed to be distance from x to v,by adding all node weights in the path
-            //set start date of x to start date of v - distance(x,v)
-
-            pull_back(v, Attributes[v].early_start);
-            
-           }
-        }
-
-      }
+    
+      //cout<<"v: "<<v<<" V.ES ";        
+      //cout<<Attributes[v].early_start <<" u.EF "<< Attributes[u].early_finish<<" v.D "<< Attributes[v].duration<<endl;
+      forward_parse(u);    
     }
 
     //////////////-----------------------------------------------
@@ -299,6 +317,7 @@ struct attribute {
     //print early starts
     cout<<"vertex\t\tES\tEF\n";
     for(int u: Vertices){
+      if((u+2)%3) continue;
       cout<<"vertex "<<u<<"\t"<<Attributes[u].early_start<<"\t"<<
       Attributes[u].early_finish<<endl;
     }
@@ -342,7 +361,7 @@ void print_graph(Graph &g){
   cout<<"print\n";
   for (int i:g.vertices()) {
   	set < int > neigh = g.get_adjList(i);
-    cout<<i<<"("<<g.get_duration(i)<<") : ";
+    cout<<i<<"("<<g.get_duration(i)<<") : "<< (g.is_initial(i)&&1) <<" "<<(g.is_terminal(i)&&1)<<"-";
     for(auto v:neigh){
     	cout<<v<<" ";
     }
