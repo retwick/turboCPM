@@ -6,10 +6,10 @@ using namespace std;
 class Graph {
   private:
   set < int > Vertices;                                           //vertex index starts from 1
-  set < pair < int, int > > Edges;                                //<u,v>
-  //map < pair < int, int > , int > Weight_of_Edges;                //<(u,v) , w>
+  set < pair < int, int > > Edges;                                //<u,v>  
   map < int, set < int > > AdjList_of_Vertices;                   // <u, {v| (u,v)eE}
-
+  
+  map < int, set<int> > Rev_AdjList;
   public:
   int Nvertices, Nedges;                                          //n,m
   bool isDirected;
@@ -26,6 +26,7 @@ struct attribute {
   };
   vector < attribute > Attributes;
 
+  //constructor
   Graph(int Nvertices, int Nedges) {
     this-> Nvertices = Nvertices;
     this-> Nedges = Nedges;    
@@ -36,6 +37,7 @@ struct attribute {
     //initialize graph
     for (int i = 1; i <= Nvertices; i++) {
       AdjList_of_Vertices.insert(make_pair(i, s));                  //initialize adjaceny list
+      Rev_AdjList.insert(make_pair(i,s));   
       Attributes.push_back(atb);                                    //store vertex data in attributes
     }
   }
@@ -56,6 +58,10 @@ struct attribute {
 
   void insert_vertex(int u){
     Vertices.insert(u);
+  }
+
+  void insert_reverse_adj(int u, int v){
+    Rev_AdjList[v].insert(u);    
   }
 
   //------------getter functions---------------------
@@ -116,9 +122,15 @@ struct attribute {
     Attributes[node].duration = duration;
   }
 
-  //-----------------------------------------
-  //function from geeksforgeek
+  void set_initial(int node){
+    Attributes[node].is_initial = true;
+  }
 
+  void set_terminal(int node){
+    Attributes[node].is_terminal = true;
+  }
+
+  //-----------------------------------------
 
 	// The function to do Topological Sort.
 	void topologicalSort()
@@ -174,11 +186,20 @@ struct attribute {
     }
 	 
     // Print topological order
+    cout<<"\ntopological order\n";
     for (int i=0; i<top_order.size(); i++)
         cout << top_order[i] << " ";
     cout << endl;
 	}  
 
+  void pull_back(int node, int ES){
+    cout<<"pull_back on "<<node<<"\n";
+    for(int v: Rev_AdjList[node]){
+      Attributes[v].early_start = max(ES - Attributes[v].duration, Attributes[v].early_start);
+      Attributes[v].early_finish = max(ES, Attributes[v].early_finish);
+      pull_back(v,ES - Attributes[v].duration);
+    }    
+  }
 
   void critical_path(){
 
@@ -192,6 +213,7 @@ struct attribute {
       Attributes[u].late_start = INT_MAX;
     }
     
+    /*
     //find dest vertex --out_degree=0
     vector<int> out_degree(Nvertices, 0);
     vector<int> in_degree(Nvertices , 0);
@@ -213,14 +235,14 @@ struct attribute {
     int sink_vertex = it_sink - out_degree.begin();
 
 
-    cout<<"source vertex: "<<souce_vertex<<" sink_vertex: "<<sink_vertex<<endl;
+    //cout<<"source vertex: "<<souce_vertex<<" sink_vertex: "<<sink_vertex<<endl;
     //---------------------------------------------------
-    //could be removed if we can prove that source vertex is topo_order[0] and 
-    //sink is topo_order[n-1];
+    //could be removed if we can prove that source vertex is top_order[0] and 
+    //sink is top_order[n-1];
     //---------------------------------------------------
-
+    */
     Attributes[top_order[0]].early_start = 0;
-    //for(int v:AdjList_of_Vertices[0])
+    
     Attributes[top_order[0]].early_finish = 0;
     for(int u: top_order ){
       //cout<<"compare: u "<<u<<"  ";
@@ -232,6 +254,19 @@ struct attribute {
            Attributes[v].early_start = Attributes[u].early_finish;
            Attributes[v].early_finish = Attributes[v].early_start + Attributes[v].duration;
            Attributes[v].parent = u;
+
+           if( Attributes[u].is_terminal&&Attributes[v].is_terminal || 
+               Attributes[u].is_initial &&Attributes[v].is_terminal ){
+            //need to remove distance between dummy node and actual node
+            
+            //find farthest node(x) from current node(v) with edges reversed.
+            //if many such x exists, do for all x
+            //also find supposed to be distance from x to v,by adding all node weights in the path
+            //set start date of x to start date of v - distance(x,v)
+
+            pull_back(v, Attributes[v].early_start);
+            
+           }
         }
 
       }
@@ -240,10 +275,10 @@ struct attribute {
     //////////////-----------------------------------------------
     //TODO   
     // use sentinel nodes  and resultant nodes are of the form (0 -> duration -> 0)
-    // Invariant: ES(initial_sentinel) + offset = EF(initial_sentinel) = ES(node)
-    // EF(node) = ES(terminal_sentinel) + offset = EF(terminal_sentinel)
+    // Invariant: ES(initial_sentinel) = EF(initial_sentinel) = ES(node)
+    // EF(node) = ES(terminal_sentinel) = EF(terminal_sentinel)
 
-    // dummy node to have duration = offset (not implemented)
+    // dummy node to have duration = offset 
 
     // Dependencies -- Start to Start, FInish to Finish (Start to Finish)    
     // distinguish between initial and terminal sentinel nodes --> classify dependencies 
@@ -263,7 +298,7 @@ struct attribute {
 
     //print early starts
     cout<<"vertex\t\tES\tEF\n";
-    for(int u: top_order){
+    for(int u: Vertices){
       cout<<"vertex "<<u<<"\t"<<Attributes[u].early_start<<"\t"<<
       Attributes[u].early_finish<<endl;
     }
@@ -323,21 +358,33 @@ void print_graph(Graph &g){
 int main() {
 
   int n, e;
-  //cout<<"Enter n, m:";
+  cout<<"Enter n, m:";
   cin >> n >> e;
   Graph g(n, e);
 
   while (e--) {
     int u, v;
-    //cout<<"enter u,v:";
+    cout<<"enter u,v:";
     cin >> u >> v;
     g.insert_vertex(u);
     g.insert_vertex(v);
     g.insert_edge(u, v);
+    g.insert_reverse_adj(u,v);
   }
 
   for(int i=0; i<n; ++i){
     int dur;
+    if((i+2)%3 == 2){
+      g.set_duration(i,0); 
+      g.set_initial(i);
+      continue;      
+    }
+    else if((i+2)%3 == 1){
+      g.set_duration(i,0);
+      g.set_terminal(i);
+      continue;
+    }
+    cout<<"enter duration: ";
     cin>>dur;
     g.set_duration(i, dur);
   }
