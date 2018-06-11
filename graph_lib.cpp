@@ -7,13 +7,11 @@ class Graph {
   private:
   set < int > Vertices;                                           //vertex index starts from 1
   set < pair < int, int > > Edges;                                //<u,v>  
-  map < int, set < int > > AdjList_of_Vertices;                   // <u, {v| (u,v)eE}
-  
-  map < int, set<int> > Rev_AdjList;
+  map < int, set < int > > AdjList_of_Vertices;                   // <u, {v| (u,v)eE} >  
+  map < int, set<int> > Rev_AdjList;                              // <v, {u| (u,v)eE} >
   public:
   int Nvertices, Nedges;                                          //n,m
-  bool isDirected;
-  
+  bool isDirected;  
   vector<int> top_order;
   
 struct attribute {
@@ -214,13 +212,13 @@ struct attribute {
   void forward_parse(int u, int start = 0){
     if(start != 0){
       Attributes[u].early_start = start;
-      Attributes[u].early_finish = start + Attributes[u].duration;
+      Attributes[u].early_finish = start + Attributes[u].duration - 1;
     }
     for(int v: AdjList_of_Vertices[u]){
       if(Attributes[v].early_start < Attributes[u].early_finish){
 
-        Attributes[v].early_start = Attributes[u].early_finish;
-        Attributes[v].early_finish = Attributes[v].early_start + Attributes[v].duration;
+        Attributes[v].early_start = Attributes[u].early_finish+1;
+        Attributes[v].early_finish = Attributes[v].early_start + Attributes[v].duration - 1;
         Attributes[v].parent = u;
 
         if( Attributes[u].is_terminal&&Attributes[v].is_terminal || 
@@ -241,7 +239,7 @@ struct attribute {
 
   void critical_path(){
 
-    //for every u e V, ES=int_min, EF=int min
+    //for every u in V, ES=int_min, EF=int min
 
     for(int u: Vertices){
       Attributes[u].early_finish = INT_MIN;
@@ -251,63 +249,18 @@ struct attribute {
       Attributes[u].late_start = INT_MAX;
     }
     
-    /*
-    //find dest vertex --out_degree=0
-    vector<int> out_degree(Nvertices, 0);
-    vector<int> in_degree(Nvertices , 0);
-    
-
-    //for every (u,v) e E, in_degree[v]++;
-    for(pair<int, int> p : Edges){
-      out_degree[p.first]++;
-      in_degree[p.second]++;      
-    }
-
-    //-------------------------------------------------
-    //find source vertex -- in_degree = 0
-    //finds first index s.t. in degree is zero
-    auto it_source = find_if(in_degree.begin(), in_degree.end(), [](int i){ return !(i); });
-    int souce_vertex = it_source - in_degree.begin();
-
-    auto it_sink = find_if(out_degree.begin(), out_degree.end(), [](int i){ return !(i); });
-    int sink_vertex = it_sink - out_degree.begin();
-
-
-    //cout<<"source vertex: "<<souce_vertex<<" sink_vertex: "<<sink_vertex<<endl;
-    //---------------------------------------------------
-    //could be removed if we can prove that source vertex is top_order[0] and 
-    //sink is top_order[n-1];
-    //---------------------------------------------------
-    */
-    Attributes[top_order[0]].early_start = 0;
-    
+    Attributes[top_order[0]].early_start = 0;    
     Attributes[top_order[0]].early_finish = 0;
     for(int u: top_order ){
-      //cout<<"compare: u "<<u<<"  ";
-    
-      //cout<<"v: "<<v<<" V.ES ";        
-      //cout<<Attributes[v].early_start <<" u.EF "<< Attributes[u].early_finish<<" v.D "<< Attributes[v].duration<<endl;
       forward_parse(u);    
     }
 
     //////////////-----------------------------------------------
-    //TODO   
-    // use sentinel nodes  and resultant nodes are of the form (0 -> duration -> 0)
-    // Invariant: ES(initial_sentinel) = EF(initial_sentinel) = ES(node)
-    // EF(node) = ES(terminal_sentinel) = EF(terminal_sentinel)
-
-    // dummy node to have duration = offset 
-
-    // Dependencies -- Start to Start, FInish to Finish (Start to Finish)    
-    // distinguish between initial and terminal sentinel nodes --> classify dependencies 
-    // -->corner case FF dependency. (automatically adjusts, if invariant is maintained)    
 
     // Calendars
     // use C++ boost library for calendar arithmetic 
 
     // Constraints -- Must finish before, must start after, must start before
-
-    //------
 
     // change to particular point of time and recompute critical path
     
