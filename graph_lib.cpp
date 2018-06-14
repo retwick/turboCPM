@@ -14,13 +14,14 @@ class Graph {
   bool isDirected;  
   vector<int> top_order;
   
-struct attribute {
+  struct attribute {
     bool visited = false;
     int distance = INT_MAX;
     int parent = 0;
-    int early_start, early_finish, late_start, late_finish;
+    int early_start = INT_MIN, early_finish = INT_MIN, late_start=INT_MAX, late_finish=INT_MAX;
     int duration;
-    bool is_initial = false, is_terminal=false;
+    bool is_initial = false, is_terminal=false, is_variable=false;
+    string name; 
   };
   vector < attribute > Attributes;
 
@@ -80,6 +81,10 @@ struct attribute {
     return Attributes[u].visited;
   }
 
+  string get_name(int node){
+    return Attributes[node].name;
+  }
+
   int get_distance(int u) {
     return Attributes[u].distance;
   }
@@ -110,10 +115,22 @@ struct attribute {
     return Attributes[v].is_initial;
   }
 
+  int get_early_start(int v){
+    return Attributes[v].early_start;
+  }
+
+  int get_early_finish(int v){
+    return Attributes[v].early_finish;
+  }
+
   //-----------------------setter functions---------------------
 
   void visit(int u) {
     Attributes[u].visited = true;
+  }
+
+  void set_name(int node, string name){
+    Attributes[node].name = name;
   }
 
   void set_distance(int node, int new_distance) {
@@ -141,12 +158,9 @@ struct attribute {
 	// The function to do Topological Sort.
 	void topologicalSort()
 	{
-	  int V = Nvertices;
-    // Create a vector to store indegrees of all vertices. Initialize all indegrees as 0.
+	  int V = Nvertices;    
     vector<int> in_degree(V, 0);
- 
-    // Traverse adjacency lists to fill indegrees of vertices.  This step takes O(V+E) time
-
+     
     //for every (u,v) e E, in_degree[v]++;
     for(pair<int, int> p : get_edges()){
       in_degree[p.second]++;
@@ -185,7 +199,7 @@ struct attribute {
       cnt++;
 	  }
 	 
-	    // Check if there was a cycle
+	  // Check if there was a cycle
     if (cnt != V){
       cout << "There exists a cycle in the graph\n";
       return;
@@ -198,6 +212,8 @@ struct attribute {
     cout << endl;
 	}  
 
+
+  //function to remove distance between dummy node and actual node
   void pull_back(int node, int ES){
     cout<<"pull_back on "<<node<<"\n";
     if(Rev_AdjList[node].empty()){
@@ -223,60 +239,46 @@ struct attribute {
 
         if( Attributes[u].is_terminal&&Attributes[v].is_terminal || 
            Attributes[u].is_initial &&Attributes[v].is_terminal ){
-        //need to remove distance between dummy node and actual node
+          
+          //for all incoming vertices(x) of v
+          //if (v,x) invariant is not maintained,
+          
+          for(int x: Rev_AdjList[v]){                        
+            if(Attributes[v-1].early_finish+1 != Attributes[v].early_start){
+              pull_back(v-1, Attributes[v].early_start - Attributes[v-1].duration);              
+            }
+            
+            if(Attributes[x].is_initial){
+             if(Attributes[x].early_finish+1 != Attributes[x+1].early_start){
+                pull_back(x, Attributes[x+1].early_start- Attributes[x].duration);              
+              } 
+            }
+            else{
+              //x is not dummy node
+              if(Attributes[x].is_variable){
+                Attributes[x].early_finish = Attributes[v].early_start-1;
+              }
+              else{
+                pull_back(x,Attributes[v].early_start- Attributes[x].duration);
+              }
+            }
 
-        //find farthest node(x) from current node(v) with edges reversed.
-        //if many such x exists, do for all x
-        //also find supposed to be distance from x to v,by adding all node weights in the path
-        //set start date of x to start date of v - distance(x,v)
-
-        pull_back(v, Attributes[v].early_start);      
-        }
-        forward_parse(v);
+          } //end of for loop
+        }          
       }
+      forward_parse(v,Attributes[v].early_start);
     }
   }
+  
 
   void critical_path(){
-
-    //for every u in V, ES=int_min, EF=int min
-
-    for(int u: Vertices){
-      Attributes[u].early_finish = INT_MIN;
-      Attributes[u].early_start = INT_MIN;
-
-      Attributes[u].late_finish = INT_MAX;
-      Attributes[u].late_start = INT_MAX;
-    }
-    
     Attributes[top_order[0]].early_start = 0;    
     Attributes[top_order[0]].early_finish = 0;
+    
     for(int u: top_order ){
       forward_parse(u);    
     }
-
-    //////////////-----------------------------------------------
-
-    // Calendars
-    // use C++ boost library for calendar arithmetic 
-
-    // Constraints -- Must finish before, must start after, must start before
-
-    // change to particular point of time and recompute critical path
-    
-    // Accouting for actual fraction of work completed
-    //-----------------------------//////////////////////////////
-
-    //print early starts
-    cout<<"vertex\t\tES\tEF\n";
-    for(int u: Vertices){
-      if((u+2)%3) continue;
-      cout<<"vertex "<<u<<"\t"<<Attributes[u].early_start<<"\t"<<
-      Attributes[u].early_finish<<endl;
-    }
   }
-
-
 };
 
 //----------------------------------------------------------------------------------//
@@ -322,50 +324,3 @@ void print_graph(Graph &g){
   }
 
 }
-
-//-----------------------------------------------------------------------------------//
-//-----------------------------------------------------------------------------------//
-
-
-int main() {
-
-  int n, e;
-  cout<<"Enter n, m:";
-  cin >> n >> e;
-  Graph g(n, e);
-
-  while (e--) {
-    int u, v;
-    cout<<"enter u,v:";
-    cin >> u >> v;
-    g.insert_vertex(u);
-    g.insert_vertex(v);
-    g.insert_edge(u, v);
-    g.insert_reverse_adj(u,v);
-  }
-
-  for(int i=0; i<n; ++i){
-    int dur;
-    if((i+2)%3 == 2){
-      g.set_duration(i,0); 
-      g.set_initial(i);
-      continue;      
-    }
-    else if((i+2)%3 == 1){
-      g.set_duration(i,0);
-      g.set_terminal(i);
-      continue;
-    }
-    cout<<"enter duration: ";
-    cin>>dur;
-    g.set_duration(i, dur);
-  }
-
-  g.topologicalSort();
-  cout<<endl;
-  print_graph(g);
-  cout<<endl;
-  g.critical_path();
-  return 0;
-}
-

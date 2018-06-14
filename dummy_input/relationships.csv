@@ -1,0 +1,10 @@
+﻿task_id,predecessor_id,rel_type,offset
+3,2,FS,2
+5,2,SS,
+6,3,SS,1
+8,5,SF,3
+10,5,FF,3
+11,6,SS,1
+11,8,FS,
+12,10,SF,2
+12,11,FS,

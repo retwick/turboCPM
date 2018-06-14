@@ -1,0 +1,10 @@
+﻿week_working_days
+1
+2
+3
+4
+5
+
+holiday_name,holiday_start,holiday_end,duration
+Holiday 1,2018-06-13T00:00:00.000,2018-06-13T23:59:59.999,1
+Holiday 2,2018-06-20T00:00:00.000,2018-06-21T23:59:59.999,2
