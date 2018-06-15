@@ -28,21 +28,22 @@ void print_early_start(Graph &g){
   cout<<"vertex\tES\tEF\n";
   for(int u: g.vertices()){
     if((u+2)%3) continue;
+    if((g.get_name(u) == "off")) continue;
     Period p1(g.get_early_start(u)-1, Days);
     Period p2( g.get_early_finish(u)-1, Days);
     cout<<g.get_name(u)<<"\t"<<cal.advance(d1, p1) << "\t" << cal.advance(d1, p2)<<endl;
-    //cout<<" "<<u<<"\t"<<g.get_early_start(u) << "\t" <<g.get_early_finish(u) <<endl;
+    //cout<<g.get_name(u)<<"\t"<<g.get_early_start(u) << "\t" <<g.get_early_finish(u) <<endl;
   }
 }
 
 int main() {
-/*
+
   CSVReader reader("tasks.csv");
   // Get the data from CSV File
   vector<vector<string> > dataList = reader.getData();
   cout<<dataList.size()-1;
-*/
-
+  int n = (dataList.size()-1)*3;
+/*
   int n, e;
   cout<<"Enter n, m:";
   cin >> n >> e;
@@ -79,7 +80,12 @@ int main() {
     cin>>s;
     g.set_name(3*i+1,s);
   }
-
+  for(int i=0;i<n/3;++i){
+    bool is_parent;
+    cin>>is_parent;
+    //g.set_variable(3*i+1, is_parent);
+  }
+*/
   g.topologicalSort();
   cout<<endl;
   print_graph(g);

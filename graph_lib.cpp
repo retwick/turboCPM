@@ -115,6 +115,10 @@ class Graph {
     return Attributes[v].is_initial;
   }
 
+  bool is_variable(int v){
+    return Attributes[v].is_variable;
+  }
+
   int get_early_start(int v){
     return Attributes[v].early_start;
   }
@@ -127,6 +131,10 @@ class Graph {
 
   void visit(int u) {
     Attributes[u].visited = true;
+  }
+
+  void set_variable(int node, bool b){
+    Attributes[node].is_variable = b;
   }
 
   void set_name(int node, string name){
@@ -207,7 +215,7 @@ class Graph {
 	 
     // Print topological order
     cout<<"\ntopological order\n";
-    for (int i=0; i<top_order.size(); i++)
+    for (int i=0; i < (top_order.size()); i++)
         cout << top_order[i] << " ";
     cout << endl;
 	}  
@@ -215,14 +223,20 @@ class Graph {
 
   //function to remove distance between dummy node and actual node
   void pull_back(int node, int ES){
-    cout<<"pull_back on "<<node<<"\n";
-    if(Rev_AdjList[node].empty()){
-      cout<<"start forward_parse at :"<<node<<endl;
-      forward_parse(node, ES);
+    if(Attributes[node].is_variable){        
+      cout<<"set parent "<<node<<endl;    
+      Attributes[node].early_finish = ES+Attributes[node].duration-1;
     }
-    for(int v: Rev_AdjList[node]){      
-      pull_back(v,ES - Attributes[v].duration);
-    }    
+    else{
+      //cout<<"pull_back on "<<node<<"\n";
+      if(Rev_AdjList[node].empty()){
+        cout<<"start forward_parse at :"<<node<<endl;
+        forward_parse(node, ES);
+      }
+      for(int v: Rev_AdjList[node]){      
+        pull_back(v,ES - Attributes[v].duration);
+      }    
+    }
   }
 
   void forward_parse(int u, int start = 0){
@@ -235,41 +249,39 @@ class Graph {
 
         Attributes[v].early_start = Attributes[u].early_finish+1;
         Attributes[v].early_finish = Attributes[v].early_start + Attributes[v].duration - 1;
-        Attributes[v].parent = u;
-
-        if( Attributes[u].is_terminal&&Attributes[v].is_terminal || 
-           Attributes[u].is_initial &&Attributes[v].is_terminal ){
-          
-          //for all incoming vertices(x) of v
-          //if (v,x) invariant is not maintained,
-          
-          for(int x: Rev_AdjList[v]){                        
-            if(Attributes[v-1].early_finish+1 != Attributes[v].early_start){
-              pull_back(v-1, Attributes[v].early_start - Attributes[v-1].duration);              
-            }
-            
-            if(Attributes[x].is_initial){
-             if(Attributes[x].early_finish+1 != Attributes[x+1].early_start){
-                pull_back(x, Attributes[x+1].early_start- Attributes[x].duration);              
-              } 
-            }
-            else{
-              //x is not dummy node
-              if(Attributes[x].is_variable){
+        
+        if( Attributes[u].is_terminal&&Attributes[v].is_terminal || Attributes[u].is_initial &&Attributes[v].is_terminal ){
+          for(int x: Rev_AdjList[v]){            
+            if(Attributes[x].is_variable){
                 Attributes[x].early_finish = Attributes[v].early_start-1;
+              }            
+
+            //Start to Finish 
+            else if((Attributes[x].is_initial) && (Attributes[v].early_start != Attributes[v-1].early_finish+1)){
+                cout<<"SF"<<v<<endl;
+              if(Attributes[v-1].is_variable){
+                Attributes[v-1].early_finish = Attributes[v].early_start-1;
               }
               else{
-                pull_back(x,Attributes[v].early_start- Attributes[x].duration);
+                pull_back(v-1, Attributes[v].early_start- Attributes[v].duration);             
+              }
+            }            
+            //Finish to Finish
+            else if((Attributes[x].is_terminal) && (Attributes[v].early_start != Attributes[v-1].early_finish+1)){
+              cout<<"FF "<<x<<" "<<v<<endl;
+              if(Attributes[v-1].is_variable){
+                Attributes[v-1].early_finish = Attributes[v].early_start-1;
+              }
+              else{
+                pull_back(v-1, Attributes[v].early_start- Attributes[v].duration);
               }
             }
-
           } //end of for loop
-        }          
-      }
+        }
       forward_parse(v,Attributes[v].early_start);
+      }
     }
   }
-  
 
   void critical_path(){
     Attributes[top_order[0]].early_start = 0;    
@@ -316,7 +328,8 @@ void print_graph(Graph &g){
   cout<<"print\n";
   for (int i:g.vertices()) {
   	set < int > neigh = g.get_adjList(i);
-    cout<<i<<"("<<g.get_duration(i)<<") : "<< (g.is_initial(i)&&1) <<" "<<(g.is_terminal(i)&&1)<<"-";
+    cout<<i<<"("<<g.get_duration(i)<<") : "<< (g.is_initial(i)) <<" "<<(g.is_terminal(i));
+    cout<<" "<<g.is_variable(i)<<"-";
     for(auto v:neigh){
     	cout<<v<<" ";
     }
