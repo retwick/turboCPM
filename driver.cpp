@@ -30,8 +30,8 @@ void print_early_start(Graph &g){
     Period p2( g.get_early_finish(u)-1, Days);
     
     cout<<g.get_name(u)<<"\t";
-    cout<<cal.advance(d1, p1) << "\t" << cal.advance(d1, p2)<<endl;
-    //cout<<g.get_early_start(u) << "\t" <<g.get_early_finish(u) <<endl;
+    //cout<<cal.advance(d1, p1) << "\t" << cal.advance(d1, p2)<<endl;
+    cout<<g.get_early_start(u) << "\t" <<g.get_early_finish(u) <<endl;
   }
 }
 
@@ -81,7 +81,13 @@ int main() {
 
     //dummy end
     g.set_duration(3*index+2, 0);
-    g.set_terminal(3*index);
+    g.set_terminal(3*index+2);
+
+    //delete any node marked as parent
+    if(row[2] != "-"){
+      int parent_index = stoi(row[2]);
+      g.remove_activity(parent_index);
+    }
   }
 
   int offset_count = 0;
@@ -93,12 +99,12 @@ int main() {
   
     vector<string> row = relations[i];
     /*
-    row[0] - pred_id
-    row[1] - succ_id
+    row[0] - task_id
+    row[1] - pred_id
     row[2] - dependency type
     row[3] - offset (string length == 1 if empty )
     */
-    int u=stoi(row[0]), v=stoi(row[1]), offset;      
+    int v=stoi(row[0]), u=stoi(row[1]), offset;      
     //cout<<row[3].size()<<endl;
     if (row[3].size() == 1) cout<<"empty\n";
     /*
@@ -110,16 +116,19 @@ int main() {
     */
 
     if(row[2] == "FS"){
-      //cout<<"FS\n";
-      if(row[3].size()==1){
+      cout<<"FS\n";
+      //remove negation!
+      //if(row[3].size()==1){
         //no offset
         //dummy 3u, actual 3u+1, dummy 3u+2
         //dummy 3v, actual 3v+1, dummy 3v+2
 
         //3u+2 --> 3v
+        //cout<<3*u+2<<" FS--> "<<3*v<<endl;
         g.insert_edge(3*u+2, 3*v);
         g.insert_reverse_adj(3*u+2, 3*v); 
-      }
+      //}
+      /*
       else{
         offset = stoi(row[3]);
         offset_count++;
@@ -127,15 +136,30 @@ int main() {
         g.insert_vertex(3*n+offset_count);
         g.insert_edge()
       }
+      */
     }
     else if(row[2] == "SS"){
       //cout<<"SS\n";
+      //if(row[3].size() == 1){
+        //3u --> 3v
+        g.insert_edge(3*u, 3*v);
+        g.insert_reverse_adj(3*u, 3*v);   
+      //}
     }
     else if(row[2] == "SF"){
-
+      //if(row[3].size() == 1){
+        //3u --> 3v+2
+        g.insert_edge(3*u, 3*v+2);
+        g.insert_reverse_adj(3*u, 3*v+2);   
+      //}
     }
     else if(row[2] == "FF"){
-
+      //3u+2 --> 3v+2
+      //if(row[3].size() == 1){
+        //3u --> 3v
+        g.insert_edge(3*u+2, 3*v+2);
+        g.insert_reverse_adj(3*u+2, 3*v+2);   
+      //}
     }
   }
 
@@ -188,13 +212,14 @@ int main() {
     g.set_child(a,b);
   }
   */
-//  g.topologicalSort();
-  cout<<endl;
+
   print_graph(g);
   cout<<endl;
-  //g.critical_path();
+  g.topologicalSort();
+  cout<<endl;
+  g.critical_path();
 
-  //print_early_start(g);
+  print_early_start(g);
 
   return 0;
 }

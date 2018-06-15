@@ -56,6 +56,33 @@ class Graph {
 
   void insert_vertex(int u){
     Vertices.insert(u);
+    Nvertices++;
+  }
+
+  void remove_vertex(int u){
+    set<int>::iterator it;
+    it = Vertices.find(u);
+    if(it != Vertices.end()){
+      Vertices.erase(it);
+      AdjList_of_Vertices[u].clear();
+      Nvertices--;
+    }
+  }
+
+  void remove_edge(int u, int v){
+    set<pair<int,int> >::iterator it;
+    it = Edges.find(make_pair(u,v));
+    if(it != Edges.end()){
+      Edges.erase(it);
+    }
+  }
+
+  void remove_activity(int u){
+    remove_vertex(3*u);
+    remove_vertex(3*u+1);
+    remove_vertex(3*u+2);
+    remove_edge(3*u, 3*u+1);
+    remove_edge(3*u+1, 3*u+2);
   }
 
   void insert_reverse_adj(int u, int v){
@@ -197,12 +224,13 @@ class Graph {
       
       cnt++;
     }
-   
+   /*
     // Check if there was a cycle
     if (cnt != V){
       cout << "There exists a cycle in the graph\n";
       return;
     }
+    */
    
     // Print topological order
     cout<<"\ntopological order\n";
@@ -279,7 +307,7 @@ void print_graph(Graph &g){
   cout<<"print\n";
   for (int i:g.vertices()) {
     set < int > neigh = g.get_adjList(i);
-    cout<<i<<"("<<g.get_duration(i)<<") : "<< (g.is_initial(i)&&1) <<" "<<(g.is_terminal(i)&&1)<<"-";
+    cout<<i<<"("<<g.get_duration(i)<<") : "<<g.get_name(i)<<" : "<< (g.is_initial(i)&&1) <<" "<<(g.is_terminal(i)&&1)<<"-";
     for(auto v:neigh){
       cout<<v<<" ";
     }
