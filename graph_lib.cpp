@@ -10,7 +10,7 @@ class Graph {
   map < int, set < int > > AdjList_of_Vertices;                   // <u, {v| (u,v)eE} >  
   map < int, set<int> > Rev_AdjList;                              // <v, {u| (u,v)eE} >
   public:
-  int Nvertices, Nedges;                                          //n,m
+  int Nvertices;                                          //n
   bool isDirected;  
   vector<int> top_order;
   
@@ -26,10 +26,9 @@ class Graph {
   vector < attribute > Attributes;
 
   //constructor
-  Graph(int Nvertices, int Nedges) {
+  Graph(int Nvertices) {
     this-> Nvertices = Nvertices;
-    this-> Nedges = Nedges;    
-
+    
     set < int > s = {};
     attribute atb;
     Attributes.push_back(atb);                                      //dummy atribute to start index from 1
@@ -155,10 +154,10 @@ class Graph {
 
   //-----------------------------------------
 
-	// The function to do Topological Sort.
-	void topologicalSort()
-	{
-	  int V = Nvertices;    
+  // The function to do Topological Sort.
+  void topologicalSort()
+  {
+    int V = Nvertices;    
     vector<int> in_degree(V, 0);
      
     //for every (u,v) e E, in_degree[v]++;
@@ -176,7 +175,7 @@ class Graph {
     
     // Initialize count of visited vertices
     int cnt = 0;
- 	    
+      
     // One by one dequeue vertices from queue and enqueue
     // adjacents if indegree of adjacent becomes 0
     while (!q.empty())
@@ -190,27 +189,27 @@ class Graph {
       // Iterate through all its neighbouring nodes
       // of dequeued node u and decrease their in-degree
       // by 1
-      	        
+                
       for(int v: get_adjList(u)){
         if(--in_degree[v] == 0)
           q.push(v);
       }
       
       cnt++;
-	  }
-	 
-	  // Check if there was a cycle
+    }
+   
+    // Check if there was a cycle
     if (cnt != V){
       cout << "There exists a cycle in the graph\n";
       return;
     }
-	 
+   
     // Print topological order
     cout<<"\ntopological order\n";
     for (int i=0; i<top_order.size(); i++)
         cout << top_order[i] << " ";
     cout << endl;
-	}  
+  }  
 
 
   //function to remove distance between dummy node and actual node
@@ -254,13 +253,7 @@ class Graph {
               } 
             }
             else{
-              //x is not dummy node
-              if(Attributes[x].is_variable){
-                Attributes[x].early_finish = Attributes[v].early_start-1;
-              }
-              else{
-                pull_back(x,Attributes[v].early_start- Attributes[x].duration);
-              }
+              pull_back(x,Attributes[v].early_start- Attributes[x].duration);
             }
 
           } //end of for loop
@@ -282,43 +275,13 @@ class Graph {
 };
 
 //----------------------------------------------------------------------------------//
-
-/*
-The following BFS function is for the purpose of checking
-that the Graph class and its members work correctly.
-*/
-
-void BFS(Graph & g, int source) {
-  for (auto u: g.vertices()) {
-    g.set_distance(u, INT_MAX);
-    g.set_parent(u, 0);
-  }
-
-  queue < int > q;
-  g.set_distance(source, 0);
-  q.push(source);
-
-  while (q.empty() == false) {
-    auto u = q.front();
-    q.pop();
-
-    for (auto v: g.get_adjList(u)) {
-      if (g.is_visited(v) == false) {
-        g.visit(v);
-        g.set_parent(v, u);
-        q.push(v);
-      }
-    }
-  }
-}
-
 void print_graph(Graph &g){
   cout<<"print\n";
   for (int i:g.vertices()) {
-  	set < int > neigh = g.get_adjList(i);
+    set < int > neigh = g.get_adjList(i);
     cout<<i<<"("<<g.get_duration(i)<<") : "<< (g.is_initial(i)&&1) <<" "<<(g.is_terminal(i)&&1)<<"-";
     for(auto v:neigh){
-    	cout<<v<<" ";
+      cout<<v<<" ";
     }
     cout<<endl;
   }

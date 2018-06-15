@@ -46,7 +46,16 @@ std::vector<std::vector<std::string> > CSVReader::getData()
 	}
 	// Close the File
 	file.close();
-	
+/*	
+	for(auto a: dataList){
+		int i=0;
+		for(auto b: a){
+			
+			cout<<"row["<<i++<<"]"<<b<<" ";
+		}
+		cout<<endl;
+	}
+*/
 	return dataList;
 
 
