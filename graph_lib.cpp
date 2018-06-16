@@ -41,6 +41,7 @@ class Graph {
   }
 
   void new_edge(int u, int v, pair < int, int > edge, int weight) {
+    
     AdjList_of_Vertices[u].insert(v);
     Edges.insert(edge);
     //Weight_of_Edges.insert(make_pair(edge, weight));
@@ -57,6 +58,11 @@ class Graph {
   void insert_vertex(int u){
     Vertices.insert(u);
     Nvertices++;
+  }
+
+  void connect(int u, int v){
+    insert_edge(u, v);
+    insert_reverse_adj(u, v); 
   }
 
   void remove_vertex(int u){
@@ -77,7 +83,31 @@ class Graph {
     }
   }
 
-  void remove_activity(int u){
+  void add_activity(int index, int dur){
+    
+    insert_vertex(3*index);
+    insert_vertex(3*index+1);
+    insert_vertex(3*index+2);
+    //create link between dummy start and actual node
+    insert_edge(3*index, 3*index+1);
+    insert_reverse_adj(3*index, 3*index+1);
+    //create link between actual node and dummy end
+    insert_edge(3*index+1, 3*index+2);    
+    insert_reverse_adj(3*index+1, 3*index+2);
+
+    //dummy start
+    set_duration(3*index, 0);
+    set_initial(3*index);
+
+    //actual node
+    set_duration(3*index+1,dur);
+
+    //dummy end
+    set_duration(3*index+2, 0);
+    set_terminal(3*index+2);
+  }
+
+  void remove_activity(int u){          
     remove_vertex(3*u);
     remove_vertex(3*u+1);
     remove_vertex(3*u+2);
@@ -155,7 +185,8 @@ class Graph {
     Attributes[u].visited = true;
   }
 
-  void set_name(int node, string name){
+  void set_name(int node, string name){    
+    node = 3*(node)+1;
     Attributes[node].name = name;
   }
 
@@ -261,8 +292,7 @@ class Graph {
       if(Attributes[v].early_start < Attributes[u].early_finish){
 
         Attributes[v].early_start = Attributes[u].early_finish+1;
-        Attributes[v].early_finish = Attributes[v].early_start + Attributes[v].duration - 1;
-        Attributes[v].parent = u;
+        Attributes[v].early_finish = Attributes[u].early_finish + Attributes[v].duration;        
 
         if( Attributes[u].is_terminal&&Attributes[v].is_terminal || 
            Attributes[u].is_initial &&Attributes[v].is_terminal ){
@@ -281,11 +311,15 @@ class Graph {
               } 
             }
             else{
-              pull_back(x,Attributes[v].early_start- Attributes[x].duration);
+              //x is not dummy node
+              
+                pull_back(x,Attributes[v].early_start- Attributes[x].duration);
+              
             }
 
           } //end of for loop
-        }          
+}
+                  
       }
       forward_parse(v,Attributes[v].early_start);
     }
@@ -307,7 +341,7 @@ void print_graph(Graph &g){
   cout<<"print\n";
   for (int i:g.vertices()) {
     set < int > neigh = g.get_adjList(i);
-    cout<<i<<"("<<g.get_duration(i)<<") : "<<g.get_name(i)<<" : "<< (g.is_initial(i)&&1) <<" "<<(g.is_terminal(i)&&1)<<"-";
+    cout<<i<<"("<<g.get_duration(i)<<") : "<<g.get_name(i)<<" : "<< (g.is_initial(i)) <<" "<<(g.is_terminal(i))<<"-";
     for(auto v:neigh){
       cout<<v<<" ";
     }
