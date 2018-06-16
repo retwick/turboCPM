@@ -42,4 +42,4 @@ g++ driver.cpp -o driver -lQuantLib
 ## Built With
 
 * [QuantLib](https://github.com/lballabio/quantlib) - Calendar operations
-* [c++](https://www.boost.org/)
+* [C++ Boost Library](https://www.boost.org/)
