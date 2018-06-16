@@ -262,70 +262,88 @@ class Graph {
       return;
     }
     */
-   
+   /*
     // Print topological order
     cout<<"\ntopological order\n";
     for (int i=0; i<top_order.size(); i++)
         cout << top_order[i] << " ";
     cout << endl;
+    */
   }  
 
 
   //function to remove distance between dummy node and actual node
   void pull_back(int node, int ES){
-    cout<<"pull_back on "<<node<<"\n";
+    //cout<<"pull_back on "<<node<<"arg: "<<ES<<"\n";
     if(Rev_AdjList[node].empty()){
-      cout<<"start forward_parse at :"<<node<<endl;
+      //cout<<"start forward_parse at :"<<node<<" arg: "<<ES<<endl;
       forward_parse(node, ES);
     }
     for(int v: Rev_AdjList[node]){      
       pull_back(v,ES - Attributes[v].duration);
     }    
   }
-
-  void forward_parse(int u, int start = 0){
-    if(start != 0){
-      Attributes[u].early_start = start;
-      Attributes[u].early_finish = start + Attributes[u].duration - 1;
+/*
+  bool check_invariant(int node){
+    if(node%3 == 2){
+      //node is terminal
+      if(Attributes[node].early_start != Attributes[node-1].early_finish+1){
+        cout<<"invariant broken: "<<node-1 <<" to "<< node<<endl;
+        return true;
+      }
+      else if(Attributes[node-1].early_start != Attributes[node-2].early_finish+1){
+        cout<<"invariant broken: "<<node-2 <<" to "<< node-1<<endl; 
+        return true;
+      }
     }
+    else if (node%3 == 1){
+      //node is middle 
+      if(Attributes[node].early_start != Attributes[node-1].early_finish+1){
+        cout<<"invariant broken: "<<node-1 <<" to "<< node<<endl;
+        return true;
+      }
+      else if(Attributes[node+1].early_start != Attributes[node].early_finish+1){
+        cout<<"invariant broken: "<<node-2 <<" to "<< node-1<<endl; 
+        return true;
+      }
+    }
+    else{
+      //node is initial
+      //node is middle 
+      if(Attributes[node+1].early_start != Attributes[node].early_finish+1){
+        cout<<"invariant broken: "<<node <<" to "<< node+1<<endl;
+        return true;
+      }
+      else if(Attributes[node+2].early_start != Attributes[node+1].early_finish+1){
+        cout<<"invariant broken: "<<node+2 <<" to "<< node+1<<endl; 
+        return true;
+      }
+    }
+    return false;
+  }
+*/
+  void forward_parse(int u, int start = 0){
+  
+    Attributes[u].early_start = max(start,Attributes[u].early_start);
+    Attributes[u].early_finish = max(start + Attributes[u].duration ,Attributes[u].early_finish);
+    
     for(int v: AdjList_of_Vertices[u]){
       if(Attributes[v].early_start < Attributes[u].early_finish){
 
-        Attributes[v].early_start = Attributes[u].early_finish+1;
+        Attributes[v].early_start = Attributes[u].early_finish;
         Attributes[v].early_finish = Attributes[u].early_finish + Attributes[v].duration;        
-
-        if( Attributes[u].is_terminal&&Attributes[v].is_terminal || 
-           Attributes[u].is_initial &&Attributes[v].is_terminal ){
-          
-          //for all incoming vertices(x) of v
-          //if (v,x) invariant is not maintained,
-          
-          for(int x: Rev_AdjList[v]){                        
-            if(Attributes[v-1].early_finish+1 != Attributes[v].early_start){
+        
+        if( Attributes[v].is_terminal ){
+          if(Attributes[v-1].early_finish != Attributes[v].early_start){
               pull_back(v-1, Attributes[v].early_start - Attributes[v-1].duration);              
             }
-            
-            if(Attributes[x].is_initial){
-             if(Attributes[x].early_finish+1 != Attributes[x+1].early_start){
-                pull_back(x, Attributes[x+1].early_start- Attributes[x].duration);              
-              } 
-            }
-            else{
-              //x is not dummy node
-              
-                pull_back(x,Attributes[v].early_start- Attributes[x].duration);
-              
-            }
+        }
 
-          } //end of for loop
-}
-                  
       }
       forward_parse(v,Attributes[v].early_start);
     }
   }
   
-
   void critical_path(){
     Attributes[top_order[0]].early_start = 0;    
     Attributes[top_order[0]].early_finish = 0;
