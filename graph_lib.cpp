@@ -40,21 +40,15 @@ class Graph {
     }
   }
 
-  void new_edge(int u, int v, pair < int, int > edge, int weight) {
-    
+  void new_edge(int u, int v, pair < int, int > edge) {    
     AdjList_of_Vertices[u].insert(v);
-    Edges.insert(edge);
-    //Weight_of_Edges.insert(make_pair(edge, weight));
+    Edges.insert(edge);    
   }
 
-  void insert_edge(int u, int v, int weight = 1) {
-    new_edge(u, v, make_pair(u, v), weight);  
+  void insert_edge(int u, int v) {
+    new_edge(u, v, make_pair(u, v));  
   }
-
-  void insert_edge(pair < int, int > edge, int weight = 1) {
-    insert_edge(edge.first, edge.second, weight);
-  }
-
+  
   void insert_vertex(int u){
     Vertices.insert(u);
     Nvertices++;
@@ -275,53 +269,14 @@ class Graph {
   //function to remove distance between dummy node and actual node
   void pull_back(int node, int ES){
     //cout<<"pull_back on "<<node<<"arg: "<<ES<<"\n";
-    if(Rev_AdjList[node].empty()){
-      //cout<<"start forward_parse at :"<<node<<" arg: "<<ES<<endl;
+    if(Rev_AdjList[node].empty()){      
       forward_parse(node, ES);
     }
     for(int v: Rev_AdjList[node]){      
       pull_back(v,ES - Attributes[v].duration);
     }    
   }
-/*
-  bool check_invariant(int node){
-    if(node%3 == 2){
-      //node is terminal
-      if(Attributes[node].early_start != Attributes[node-1].early_finish+1){
-        cout<<"invariant broken: "<<node-1 <<" to "<< node<<endl;
-        return true;
-      }
-      else if(Attributes[node-1].early_start != Attributes[node-2].early_finish+1){
-        cout<<"invariant broken: "<<node-2 <<" to "<< node-1<<endl; 
-        return true;
-      }
-    }
-    else if (node%3 == 1){
-      //node is middle 
-      if(Attributes[node].early_start != Attributes[node-1].early_finish+1){
-        cout<<"invariant broken: "<<node-1 <<" to "<< node<<endl;
-        return true;
-      }
-      else if(Attributes[node+1].early_start != Attributes[node].early_finish+1){
-        cout<<"invariant broken: "<<node-2 <<" to "<< node-1<<endl; 
-        return true;
-      }
-    }
-    else{
-      //node is initial
-      //node is middle 
-      if(Attributes[node+1].early_start != Attributes[node].early_finish+1){
-        cout<<"invariant broken: "<<node <<" to "<< node+1<<endl;
-        return true;
-      }
-      else if(Attributes[node+2].early_start != Attributes[node+1].early_finish+1){
-        cout<<"invariant broken: "<<node+2 <<" to "<< node+1<<endl; 
-        return true;
-      }
-    }
-    return false;
-  }
-*/
+
   void forward_parse(int u, int start = 0){
   
     Attributes[u].early_start = max(start,Attributes[u].early_start);

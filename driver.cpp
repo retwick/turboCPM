@@ -1,12 +1,3 @@
-    //////////////-----------------------------------------------
-
-    // Constraints -- Must finish before, must start after, must start before
-
-    // change to particular point of time and recompute critical path
-    
-    // Accouting for actual fraction of work completed
-    //-----------------------------//////////////////////////////
-
 #include "graph_lib.cpp"
 #include "read_input.cpp"
 #include <ql/time/calendars/india.hpp>
@@ -29,7 +20,7 @@ void print_early_start(Graph &g){
     Period p1(g.get_early_start(u), Days);
     Period p2( g.get_early_finish(u)-1, Days);
         
-    cout<<g.get_name(u)<<"\t "<<u<<"\t";
+    cout<<g.get_name(u)<<"\t";
     cout<<cal.advance(d1, p1) << "\t" << cal.advance(d1, p2)<<endl;
     //cout<<g.get_early_start(u) << "\t" <<g.get_early_finish(u) <<endl;
   }
@@ -37,7 +28,7 @@ void print_early_start(Graph &g){
 
 int main() {
 
-  CSVReader reader("tasks.csv");
+  CSVReader reader("dummy_input/tasks.csv");
   // Get the data from CSV File
   vector<vector<string> > tasks = reader.getData();
   
@@ -68,7 +59,7 @@ int main() {
     
   int offset_count = 0;
 
-  CSVReader relationReader("relationships.csv");
+  CSVReader relationReader("dummy_input/relationships.csv");
   vector<vector<string> > relations = relationReader.getData();
 
   for(int i=1; i<relations.size(); ++i){
@@ -81,19 +72,8 @@ int main() {
     //row[3] - offset (string length == 1 if empty )
     
     int v=stoi(row[0]), u=stoi(row[1]);      
-    //cout<<row[3].size()<<endl;
     
-    /*
-    int j=0;
-    for(auto word: row){
-      cout<< j++ <<" "<<word<<endl;
-    }
-    cout<<endl;
-    */
-    
-    if(row[2] == "FS"){
-      
-      //remove negation!
+    if(row[2] == "FS"){          
       if(row[3].size()==1){
         //no offset
         //dummy 3u, actual 3u+1, dummy 3u+2
