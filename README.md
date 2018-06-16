@@ -4,11 +4,9 @@ Project planning software.
 
 ## TODO
 ```
-Write output to file
-
 Automate calendar operations - Setting holidays and weekly working days
 
-Do backword parsing.
+Do backward parsing.
 
 Account for in-progress activities
 
@@ -30,14 +28,17 @@ QuantLib - A free/open-source library for quantitative finance
 
 First install c++ Boost Library and then install QuantLib
 
-## Compiling
+## Running the tests
+Input files are
+```
+dummy_input/tasks.csv
+dummy_input/relationships.csv
+```
+To run program
 ```
 g++ driver.cpp -o driver -lQuantLib
-```
-
-## Running the tests
-
 ./driver
+```
 
 ## Built With
 
