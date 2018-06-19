@@ -4,25 +4,33 @@
 
 using namespace QuantLib;
 
-void print_early_start(Graph &g){
-
+Calendar create_calendar(){
+  //take argument- start date of project;
   Calendar cal = India();
   
+  CSVReader reader("dummy_input/Calendar.csv");
+  // Get the data from CSV File
+  vector<vector<string> > working_days = reader.getData();
+
   cal.addHoliday(Date(13, June, 2018));
   cal.addHoliday(Date(20, June, 2018));
   cal.addHoliday(Date(21, June, 2018));
+    
+  return cal;
+}
+
+void print_early_start(Graph &g, Calendar cal){
   Date d1(6, June, 2018);
-  
   for(int u: g.vertices()){
     if((u+2)%3) continue;
-    if(g.get_name(u) == "offset") continue;
+    if(g.get_name(u) == "offset" || g.get_name(u) == "sink") continue;
     
     Period p1(g.get_early_start(u), Days);
     Period p2( g.get_early_finish(u)-1, Days);
         
     cout<<g.get_name(u)<<"\t";
     cout<<cal.advance(d1, p1) << "\t" << cal.advance(d1, p2)<<endl;
-    //cout<<g.get_early_start(u) << "\t" <<g.get_early_finish(u) <<endl;
+    
   }
 }
 
@@ -95,8 +103,6 @@ int main() {
         g.connect(3*u+2,3*(offset_count+n));
         g.connect(3*(offset_count+n)+2, 3*v);
       }
-      
-
     }
     else if(row[2] == "SS"){
       
@@ -157,15 +163,29 @@ int main() {
     }
   }
 
+  //add dummy sink
+  offset_count += 1;
+  g.add_activity(n+offset_count, 0);
+  g.set_name(n+offset_count, "sink");
+  for(int v: g.vertices()){    
+    if((g.get_adjList(v)).empty()){
+      if(v!= 3*(offset_count+n)+2){        
+        g.connect(v,3*(offset_count+n));   
+      }
+    }
+  }
+
   
-  //print_graph(g);
+  print_graph(g);
   //cout<<endl;
   g.topologicalSort();
   cout<<endl;
   g.critical_path();
-
-  print_early_start(g);
-
+  Calendar cal = create_calendar();
+    
+  print_early_start(g, cal);
+  cout<<endl;
+  
   return 0;
 }
 

@@ -15,7 +15,7 @@ Solve for parent nodes
 ```
 ## Getting Started
 The output of the program is early start, early finish, late start and late finish dates.
-It also aims to give slack available in given activities.
+It gives slack available in the activities.
 
 ### Prerequisites
 You will need the following:
