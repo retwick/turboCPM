@@ -1,21 +1,43 @@
 #include "graph_lib.cpp"
 #include "read_input.cpp"
 #include <ql/time/calendars/india.hpp>
-
+#include <string>
 using namespace QuantLib;
 
+
+Date get_date(string line){
+  
+  int year = stoi(line.substr(0, 4));
+  int month = stoi(line.substr(5, 2));
+  int date = stoi(line.substr(8, 2));
+    
+  return Date(date, Month(month), year);
+}
+
 Calendar create_calendar(){
-  //take argument- start date of project;
+  
   Calendar cal = India();
   
-  CSVReader reader("dummy_input/Calendar.csv");
+  CSVReader reader("input/calendar.csv");
   // Get the data from CSV File
   vector<vector<string> > working_days = reader.getData();
-
-  cal.addHoliday(Date(13, June, 2018));
-  cal.addHoliday(Date(20, June, 2018));
-  cal.addHoliday(Date(21, June, 2018));
     
+  bool flag = false;
+  for(auto row: working_days){
+    if(row[0] =="holiday_name"){
+      flag = true;
+      continue;
+    }
+    if(flag){
+      //start adding holidays
+      Date d_start = get_date(row[1]);      
+      Date d_end = get_date(row[2]);
+
+      for(Date it= d_start; it<= d_end; ++it){
+        cal.addHoliday(it);
+      }      
+    }
+  }
   return cal;
 }
 
@@ -36,7 +58,7 @@ void print_early_start(Graph &g, Calendar cal){
 
 int main() {
 
-  CSVReader reader("dummy_input/tasks.csv");
+  CSVReader reader("input/tasks.csv");
   // Get the data from CSV File
   vector<vector<string> > tasks = reader.getData();
   
@@ -67,7 +89,7 @@ int main() {
     
   int offset_count = 0;
 
-  CSVReader relationReader("dummy_input/relationships.csv");
+  CSVReader relationReader("input/relationships.csv");
   vector<vector<string> > relations = relationReader.getData();
 
   for(int i=1; i<relations.size(); ++i){
@@ -176,15 +198,10 @@ int main() {
   }
 
   
-  print_graph(g);
-  //cout<<endl;
-  g.topologicalSort();
-  cout<<endl;
+  g.topologicalSort();  
   g.critical_path();
-  Calendar cal = create_calendar();
-    
-  print_early_start(g, cal);
-  cout<<endl;
+  Calendar cal = create_calendar();    
+  print_early_start(g, cal);  
   
   return 0;
 }
