@@ -3,15 +3,21 @@
 Project planning software.
 
 ## TODO
+Fix calendar operations
 ```
-Fix calendar operations -change weekly working days.(Currently, Sat and Sun always holidays)
-
-Do backward parsing.
-
-Account for in-progress activities
+change weekly working days.(Currently, Sat and Sun always holidays)
+Start date of project is hard coded.
+```
+Account for in-progress activities.
+```
+Set duration of activity as (fraction completed)*actual duration.
+Iterate over all activities and remove activity if it is finished. 
+Reconstruct graph and recompute E* and L* dates.
+```
 
 Solve for parent nodes
-
+```
+--
 ```
 ## Getting Started
 The output of the program is early start, early finish, late start and late finish dates.
@@ -26,7 +32,7 @@ QuantLib - A free/open-source library for quantitative finance
 
 ### Installing
 
-First install c++ Boost Library and then install QuantLib
+First install c++ Boost Library, then install QuantLib.
 
 ## Running the tests
 Input files are

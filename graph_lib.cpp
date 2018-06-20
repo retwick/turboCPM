@@ -377,33 +377,28 @@ class Graph {
         start-- baseline/start of the node
   */
   void forward_parse(int u, int start = 0){  
-    Attributes[u].early_start = max(start,Attributes[u].early_start);
-    Attributes[u].early_finish = max(start + Attributes[u].duration ,Attributes[u].early_finish);
-    
     /*
     For every outgoing vertex of u,
     v.ES = max(v.ES, u.EF) and v.EF = max(v.EF, u.EF+v.duration)    
     */
-    for(int v: AdjList_of_Vertices[u]){
-      if(Attributes[v].early_start < Attributes[u].early_finish){
 
-        Attributes[v].early_start = Attributes[u].early_finish;
-        Attributes[v].early_finish = Attributes[u].early_finish + Attributes[v].duration;      
-        
-        /*
-        if v is a dummy terminal node,(FF or SF dependency),
-        invariant property could be broken.
-        only dummy terminal is set proper start/finish and not actual activity and dummy start
-        */
-        if( Attributes[v].is_terminal ){
-          if(Attributes[v-1].early_finish != Attributes[v].early_start){
-            //vertex (v-1) must start with v.ES- (v-1).duration
-            set_invariant_fwd_parse(v-1, Attributes[v].early_start - Attributes[v-1].duration);              
-          }
-        }
-
+    Attributes[u].early_start = max(start,Attributes[u].early_start);
+    Attributes[u].early_finish = max(start + Attributes[u].duration ,Attributes[u].early_finish);
+    
+    /*
+    if u is a dummy terminal node,(FF or SF dependency),
+    invariant property could be broken.
+    only dummy terminal is set proper start/finish and not actual activity and dummy start
+    */
+    if( Attributes[u].is_terminal ){
+      if(Attributes[u-1].early_finish != Attributes[u].early_start){
+        //vertex (u-1) must start with u.ES- (u-1).duration
+        set_invariant_fwd_parse(u-1, Attributes[u].early_start - Attributes[u-1].duration);              
       }
-      forward_parse(v,Attributes[v].early_start);
+    }
+    
+    for(int v: AdjList_of_Vertices[u]){      
+      forward_parse(v,Attributes[u].early_finish);
     }
   }
   
@@ -420,9 +415,23 @@ class Graph {
     }
   }
 
-
+  /*
+  Function to maintain invariant(late dates) property of nodes
+  Invariant:LS(dummy start)=LF(dummy start)
+            LF(dummy start)=LS(activity)
+            LF(activity)=LS(activity)+duration(activity)
+            LF(activity)=LS(dummy finish)
+  
+  arg:  node-- index of the node from which invariant has to corrected
+        start-- distance between current node and last node from which invariant is broken                
+  */
   void set_invariant_bkwd_parse(int node, int LF){ 
-  //cout<<"invariant:"<<node<<" "<<LF<<endl;   
+    /*
+    Traverses forwards in the graph until a node with no successor is found.
+    Start backward parse from that node,
+    with parameter as distance between that node and the node from which invariant is broken.
+    */
+  
     if(AdjList_of_Vertices[node].empty()){      
       backward_parse(node, LF);
     }
@@ -431,16 +440,17 @@ class Graph {
     }    
   }
 
-
-  void backward_parse(int u, int end ){
-    //cout<<u<<" "<<end<<endl;
-    //cout<<Attributes[u].late_start<<" "<<Attributes[u].late_finish<<" "<<Attributes[u].duration<<endl;
+  /*
+  Backward parsing to find late start and late finish dates
+  arg:  u-- index of the source node
+        start-- finish date of the node
+  */
+  void backward_parse(int u, int end ){    
     Attributes[u].late_start = min(end-Attributes[u].duration, Attributes[u].late_start);
     Attributes[u].late_finish = min(end, Attributes[u].late_finish);
 
     if( Attributes[u].is_initial ){
-      if(Attributes[u].late_finish != Attributes[u+1].late_start){
-        //cout<<"property broken at "<<u<<endl;
+      if(Attributes[u].late_finish != Attributes[u+1].late_start){    
         set_invariant_bkwd_parse(u+1, Attributes[u].late_finish + Attributes[u+1].duration);              
       }
     }
@@ -451,25 +461,22 @@ class Graph {
     }    
   }
 
+  /*
+  Function to invoke backward parsing in reverse topological order
+  */
   void compute_late_dates(int len){
     vector<int> rev_topo = top_order;
     reverse(rev_topo.begin(), rev_topo.end());
-
-    Attributes[rev_topo[0]].late_finish = len;
-    Attributes[rev_topo[0]].late_start = len - Attributes[rev_topo[0]].duration;
 
     for(int u: Vertices){
       Attributes[u].late_start = len- Attributes[u].duration;;
       Attributes[u].late_finish = len ;
     }
 
-    //backward_parse(rev_topo[0], len);
-
     for(int u: rev_topo ){   
       backward_parse(u,len);
       //cout<<endl<<endl;
     }
   }
-
 
 };
