@@ -46,7 +46,10 @@ To run program
 make
 ./driver
 ```
-
+Result is written to text file
+```
+output.txt
+```
 ## Built With
 
 * [QuantLib](https://github.com/lballabio/quantlib) - Calendar operations
