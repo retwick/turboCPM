@@ -52,8 +52,34 @@ void print_early_start(Graph &g, Calendar cal){
         
     cout<<g.get_name(u)<<"\t";
     cout<<cal.advance(d1, p1) << "\t" << cal.advance(d1, p2)<<endl;
-    
+    //cout<<g.get_early_start(u)<<"\t"<<g.get_early_finish(u)<<endl;
   }
+  cout<<endl<<endl; 
+}
+
+void print_late_dates(Graph &g, Calendar &cal){
+  Date d1(6, June, 2018);
+  for(int u: g.vertices()){
+    if((u+2)%3) continue;
+    if(g.get_name(u) == "offset" || g.get_name(u) == "sink") continue;
+
+    Period p1(g.get_late_start(u), Days);
+    Period p2( g.get_late_finish(u)-1, Days);    
+        
+    cout<<g.get_name(u)<<"\t";
+    cout<<cal.advance(d1, p1) << "\t" << cal.advance(d1, p2)<<endl;
+    //cout<<g.get_late_start(u)<<"\t"<<g.get_late_finish(u)<<endl;
+  }
+
+}
+
+
+int find_length(Graph &g){
+  int proj_length = 0;
+  for(int v: g.vertices()){
+    proj_length = max(proj_length, g.get_early_finish(v));
+  }
+  return proj_length;
 }
 
 int main() {
@@ -102,12 +128,12 @@ int main() {
     //row[3] - offset (string length == 1 if empty )
     
     int v=stoi(row[0]), u=stoi(row[1]);      
+    //dummy 3u, actual 3u+1, dummy 3u+2
+    //dummy 3v, actual 3v+1, dummy 3v+2
     
     if(row[2] == "FS"){          
       if(row[3].size()==1){
         //no offset
-        //dummy 3u, actual 3u+1, dummy 3u+2
-        //dummy 3v, actual 3v+1, dummy 3v+2
 
         //3u+2 --> 3v
         //cout<<3*u+2<<" FS--> "<<3*v<<endl;
@@ -184,7 +210,7 @@ int main() {
       }
     }
   }
-
+/*
   //add dummy sink
   offset_count += 1;
   g.add_activity(n+offset_count, 0);
@@ -196,13 +222,18 @@ int main() {
       }
     }
   }
-
+*/
   
   g.topologicalSort();  
   g.critical_path();
   Calendar cal = create_calendar();    
   print_early_start(g, cal);  
   
+  int length = find_length(g);
+  //cout<<length;
+
+  g.compute_late_dates(length);
+  print_late_dates(g,cal);
   return 0;
 }
 

@@ -4,7 +4,7 @@ Project planning software.
 
 ## TODO
 ```
-Automate calendar operations - Setting holidays and weekly working days
+Fix calendar operations -change weekly working days.(Currently, Sat and Sun always holidays)
 
 Do backward parsing.
 
@@ -31,12 +31,13 @@ First install c++ Boost Library and then install QuantLib
 ## Running the tests
 Input files are
 ```
-dummy_input/tasks.csv
-dummy_input/relationships.csv
+input/tasks.csv
+input/relationships.csv
+input/calendar.csv
 ```
 To run program
 ```
-g++ driver.cpp -o driver -lQuantLib
+make
 ./driver
 ```
 

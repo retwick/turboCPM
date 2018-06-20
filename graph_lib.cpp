@@ -98,7 +98,7 @@ class Graph {
   arg:  index -- ID of activity
         dur -- duration of the activity
   */
-  void add_activity(int index, int dur){
+  void add_activity(int index, int dur=0){
     
     insert_vertex(3*index);
     insert_vertex(3*index+1);
@@ -420,38 +420,34 @@ class Graph {
     }
   }
 
-/*
-  void set_invariant_bkwd_parse(int node, int ES){    
+
+  void set_invariant_bkwd_parse(int node, int LF){ 
+  //cout<<"invariant:"<<node<<" "<<LF<<endl;   
     if(AdjList_of_Vertices[node].empty()){      
-      backward_parse(node, ES);
+      backward_parse(node, LF);
     }
     for(int v: AdjList_of_Vertices[node]){      
-      set_invariant_bkwd_parse(v,ES - Attributes[v].duration);
+      set_invariant_bkwd_parse(v,LF + Attributes[v].duration);
     }    
   }
 
 
-  void backward_parse(int u, int len,int start = 0){
-    //cout<<"backward_parse "<<u<<endl;
-    if(start > Attributes[u].duration){
-      Attributes[u].late_start = min(start-Attributes[u].duration, Attributes[u].late_start);
-      Attributes[u].late_finish = min(start, Attributes[u].late_finish);
-    }
-    //v is connected to u in the original graph
-    for(int v: Rev_AdjList[u]){    
-      
-      if(Attributes[v].late_finish > Attributes[u].late_start ) {
+  void backward_parse(int u, int end ){
+    //cout<<u<<" "<<end<<endl;
+    //cout<<Attributes[u].late_start<<" "<<Attributes[u].late_finish<<" "<<Attributes[u].duration<<endl;
+    Attributes[u].late_start = min(end-Attributes[u].duration, Attributes[u].late_start);
+    Attributes[u].late_finish = min(end, Attributes[u].late_finish);
 
-        Attributes[v].late_finish = Attributes[u].late_start;
-        Attributes[v].late_start = Attributes[v].late_finish - Attributes[v].duration;        
-        
-        if( Attributes[v].is_initial ){
-          if(Attributes[v].late_finish != Attributes[v+1].late_start){
-              set_invariant_bkwd_parse(v+1, Attributes[v].late_finish);              
-            }
-        }
+    if( Attributes[u].is_initial ){
+      if(Attributes[u].late_finish != Attributes[u+1].late_start){
+        //cout<<"property broken at "<<u<<endl;
+        set_invariant_bkwd_parse(u+1, Attributes[u].late_finish + Attributes[u+1].duration);              
       }
-      backward_parse(v,len, Attributes[v].late_start);
+    }
+
+    //v is connected to u in the original graph
+    for(int v: Rev_AdjList[u]){        
+      backward_parse(v, Attributes[u].late_start);
     }    
   }
 
@@ -467,10 +463,13 @@ class Graph {
       Attributes[u].late_finish = len ;
     }
 
+    //backward_parse(rev_topo[0], len);
+
     for(int u: rev_topo ){   
-      backward_parse(u,len,len);
+      backward_parse(u,len);
+      //cout<<endl<<endl;
     }
   }
-*/
+
 
 };
