@@ -49,10 +49,12 @@ void print_early_start(Graph &g, Calendar cal){
     
     Period p1(g.get_early_start(u), Days);
     Period p2( g.get_early_finish(u)-1, Days);
-        
+    Date d_start = cal.advance(d1, p1), d_end = cal.advance(d1, p2);
+    //date in yyyy-mm-dd format   
     cout<<g.get_name(u)<<"\t";
-    cout<<cal.advance(d1, p1) << "\t" << cal.advance(d1, p2)<<endl;
-    //cout<<g.get_early_start(u)<<"\t"<<g.get_early_finish(u)<<endl;
+    cout<<d_start.year()<<"-"<<int(d_start.month())<<"-"<<d_start.dayOfMonth() << "\t";
+    cout<<d_end.year()<<"-"<<int(d_end.month())<<"-"<<d_end.dayOfMonth() << endl;
+    
   }
   cout<<endl<<endl; 
 }
@@ -65,15 +67,53 @@ void print_late_dates(Graph &g, Calendar &cal){
 
     Period p1(g.get_late_start(u), Days);
     Period p2( g.get_late_finish(u)-1, Days);    
-        
+    
+    Date d_start = cal.advance(d1, p1), d_end = cal.advance(d1, p2);
+    //date in yyyy-mm-dd format   
     cout<<g.get_name(u)<<"\t";
-    cout<<cal.advance(d1, p1) << "\t" << cal.advance(d1, p2)<<endl;
-    //cout<<g.get_late_start(u)<<"\t"<<g.get_late_finish(u)<<endl;
+    cout<<d_start.year()<<"-"<<int(d_start.month())<<"-"<<d_start.dayOfMonth() << "\t";
+    cout<<d_end.year()<<"-"<<int(d_end.month())<<"-"<<d_end.dayOfMonth() << endl;
+    
   }
-
 }
 
+void write_output(Graph &g, Calendar &cal){
+  ofstream output;
+  output.open("output.txt");
+  /*
+  output format
+  activity_name, early_start, early_finish, late_start, late_finish, slack
+  */
+  //all dates in yyyy-mm-dd format   
 
+  Date d1(6, June, 2018);
+  for(int u: g.vertices()){
+    if((u+2)%3) continue;
+    if(g.get_name(u) == "offset" || g.get_name(u) == "sink") continue;
+    
+    Period p1(g.get_early_start(u), Days);
+    Period p2( g.get_early_finish(u)-1, Days);
+
+    Period late_p1(g.get_late_start(u), Days);
+    Period late_p2( g.get_late_finish(u)-1, Days);    
+    
+    Date d_e_start = cal.advance(d1, p1), d_e_end = cal.advance(d1, p2);
+    //date in yyyy-mm-dd format   
+    output<<g.get_name(u)<<", ";
+    output<<d_e_start.year()<<"-"<<int(d_e_start.month())<<"-"<<d_e_start.dayOfMonth() << ", ";
+    output<<d_e_end.year()<<"-"<<int(d_e_end.month())<<"-"<<d_e_end.dayOfMonth()<<", ";
+    
+    Date d_start = cal.advance(d1, late_p1), d_end = cal.advance(d1, late_p2);
+    //date in yyyy-mm-dd format       
+    output<<d_start.year()<<"-"<<int(d_start.month())<<"-"<<d_start.dayOfMonth() << ", ";
+    output<<d_end.year()<<"-"<<int(d_end.month())<<"-"<<d_end.dayOfMonth()<<", ";
+    output<<g.get_late_start(u) - g.get_early_start(u)<<endl;  
+  }
+}
+
+/*
+Find the length of the project.(largest late finish)
+*/
 int find_length(Graph &g){
   int proj_length = 0;
   for(int v: g.vertices()){
@@ -227,13 +267,14 @@ int main() {
   g.topologicalSort();  
   g.critical_path();
   Calendar cal = create_calendar();    
-  print_early_start(g, cal);  
+  //print_early_start(g, cal);  
   
-  int length = find_length(g);
-  //cout<<length;
+  int length = find_length(g);  
 
   g.compute_late_dates(length);
-  print_late_dates(g,cal);
+  //print_late_dates(g,cal);
+
+  write_output(g,cal);
   return 0;
 }
 
