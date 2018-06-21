@@ -50,6 +50,9 @@ Result is written to text file
 ```
 output.txt
 ```
+## Improvements possible
+Use hashtable instead of map for graph data structure for faster execution.
+
 ## Built With
 
 * [QuantLib](https://github.com/lballabio/quantlib) - Calendar operations
