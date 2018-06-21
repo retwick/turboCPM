@@ -490,7 +490,7 @@ class Graph {
   Function to invoke forward parsing in topological order
   */
   /*
-  Time Complexity: O(nm^2 log n)
+  Time Complexity: O(m^2 log n)
   */
   void critical_path(){
     //source node is the first node in topological ordering
@@ -560,7 +560,7 @@ class Graph {
   Function to invoke backward parsing in reverse topological order
   */
   /*
-  Time Complexity: O(m^2 nlog n)
+  Time Complexity: O(m^2 log n)
   */
   void compute_late_dates(int len){
     vector<int> rev_topo = top_order;

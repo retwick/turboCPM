@@ -98,15 +98,37 @@ void write_output(Graph &g, Calendar &cal){
     Period late_p2( g.get_late_finish(u)-1, Days);    
     
     Date d_e_start = cal.advance(d1, p1), d_e_end = cal.advance(d1, p2);
+    int m;
     //date in yyyy-mm-dd format   
     output<<g.get_name(u)<<", ";
-    output<<d_e_start.year()<<"-"<<int(d_e_start.month())<<"-"<<d_e_start.dayOfMonth() << ", ";
-    output<<d_e_end.year()<<"-"<<int(d_e_end.month())<<"-"<<d_e_end.dayOfMonth()<<", ";
+    //write early start
+    output<<d_e_start.year()<<"-";
+    m = int(d_e_start.month());
+    if(m<10) { output<<"0";}
+    output<<int(d_e_start.month())<<"-"<<d_e_start.dayOfMonth() << ", ";
+
+    //wrte early finish
+    output<<d_e_end.year()<<"-";
+    m = int(d_e_end.month());
+    if(m<10) { output<<"0";}
+    output<<int(d_e_end.month())<<"-"<<d_e_end.dayOfMonth()<<", ";
     
     Date d_start = cal.advance(d1, late_p1), d_end = cal.advance(d1, late_p2);
-    //date in yyyy-mm-dd format       
-    output<<d_start.year()<<"-"<<int(d_start.month())<<"-"<<d_start.dayOfMonth() << ", ";
-    output<<d_end.year()<<"-"<<int(d_end.month())<<"-"<<d_end.dayOfMonth()<<", ";
+    
+    //write late start      
+    output<<d_start.year()<<"-";
+    m = int(d_start.month());
+    if(m<10){ output<<"0";}
+    output<<int(d_start.month());
+    output<<"-"<<d_start.dayOfMonth() << ", ";
+    
+    //write late finish
+    output<<d_end.year()<<"-";
+    m = int(d_end.month());
+    if(m<10){ output<<"0";}
+    output<<int(d_end.month())<<"-"<<d_end.dayOfMonth()<<", ";
+
+    //write slack
     output<<g.get_late_start(u) - g.get_early_start(u)<<endl;  
   }
 }
