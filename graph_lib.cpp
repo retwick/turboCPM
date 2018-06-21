@@ -21,12 +21,15 @@ class Graph {
   vector < attribute > Attributes;
 
   //constructor
+  /*
+  Time Complexity: O(nlogn) where n is number of vertices
+    vector push back: amortized O(1)
+    map insert: O(logn)
+  */
   Graph(int Nvertices) {
-    this-> Nvertices = Nvertices;
-    
+    this-> Nvertices = Nvertices;    
     set < int > s = {};
-    attribute atb;
-    Attributes.push_back(atb);                 
+    attribute atb;    
     //initialize graph
     for (int i = 0; i < Nvertices; i++) {
       AdjList_of_Vertices.insert(make_pair(i, s));                  //initialize adjaceny list
@@ -39,7 +42,10 @@ class Graph {
   Add edge to graph between u and v
   arg:  u -- index of source vertex
         v -- index of terminal vertex
-  */  
+  */
+  /*
+  Time Complexity: O(log m) where m is the number of edges
+  */
   void insert_edge(int u, int v) {    
     pair<int, int> edge = make_pair(u,v); 
     AdjList_of_Vertices[u].insert(v);
@@ -49,6 +55,9 @@ class Graph {
   /* Private
   Add vertex to Graph.
   arg:  u -- key of node
+  */
+  /*
+  Time Complexity: O(logn)
   */
   void insert_vertex(int u){
     Vertices.insert(u);
@@ -63,6 +72,9 @@ class Graph {
   /* Private
   Remove vertex from graph
   arg:  u -- key of node to be deleted
+  */
+  /*
+  Time Complexity: O(log n) 
   */
   void remove_vertex(int u){
     set<int>::iterator it;
@@ -81,6 +93,9 @@ class Graph {
   arg:  u -- key of source node
         v -- key of dest node
   */
+  /*
+  Time Complexity: O(log m)
+  */
   void remove_edge(int u, int v){
     set<pair<int,int> >::iterator it;
     it = Edges.find(make_pair(u,v));
@@ -97,6 +112,9 @@ class Graph {
   
   arg:  index -- ID of activity
         dur -- duration of the activity
+  */
+  /*
+  Time Complexity: O(log mn )
   */
   void add_activity(int index, int dur=0){
     
@@ -126,6 +144,9 @@ class Graph {
   Remove activity from graph
   arg:  u -- ID of activity to be removed
   */
+  /*
+  Time Complexity: O(log mn)
+  */
   void remove_activity(int u){          
     remove_vertex(3*u);
     remove_vertex(3*u+1);
@@ -139,6 +160,9 @@ class Graph {
   arg:  u -- key of source node
         v -- key of dest node
   */
+  /*
+  Time Complexity: O(log mn)
+  */
   void connect(int u, int v){
     insert_edge(u, v);
     insert_reverse_adj(u, v); 
@@ -149,6 +173,9 @@ class Graph {
   There is an edge from u to v in the graph
   arg:  u-- index of source vertex
         v-- index of dest vertex
+  */
+  /*
+  Time Complexity: O(log n)
   */ 
   void insert_reverse_adj(int u, int v){
     Rev_AdjList[v].insert(u);    
@@ -163,6 +190,9 @@ class Graph {
     3i+1(activity, duration = activity duration), 
     3i+2(dummy end, duration =0)
   */
+  /*
+  Time Complexity: O(1)
+  */
   set < int > vertices() {
     return Vertices;
   }
@@ -171,6 +201,9 @@ class Graph {
   Returns all edges in graph in pair format. 
   <u,v> when there is an edge between u and v
   */ 
+  /*
+  Time Complexity: O(1)
+  */
   set <pair<int, int> > get_edges(){
     return Edges;
   }
@@ -178,6 +211,9 @@ class Graph {
   /*
   Returns the adjacency list (a set) of a vertex.
   arg:  vertex -- index of vertex whose neighbours is queried 
+  */
+  /*
+  Time Complexity: O( log n)
   */
   set < int > get_adjList(int vertex){ 
     return AdjList_of_Vertices[vertex];
@@ -187,6 +223,9 @@ class Graph {
   Return Early Start date of a node
   arg:  v -- index of node
   */  
+  /*
+  Time Complexity: O(1)
+  */
   int get_early_start(int v){
     return Attributes[v].early_start;
   }
@@ -194,6 +233,9 @@ class Graph {
   /*
   Return Early finish date of a node
   arg:  v -- index of node
+  */
+  /*
+  Time Complexity: O(1)
   */
   int get_early_finish(int v){
     return Attributes[v].early_finish;
@@ -203,6 +245,9 @@ class Graph {
   Return late start
   arg:  u -- index of node
   */
+  /*
+  Time Complexity: O(1)
+  */
   int get_late_start(int u){
     return Attributes[u].late_start;
   }
@@ -211,6 +256,9 @@ class Graph {
   Return late finish
   arg:  u -- index of node
   */  
+  /*
+  Time Complexity: O(1)
+  */
   int get_late_finish(int u){
     return Attributes[u].late_finish;
   }
@@ -218,6 +266,9 @@ class Graph {
   /*
   Return name of activity. for offset nodes, it is set as "offset"
   arg:  u -- index of node
+  */
+  /*
+  Time Complexity: O(1)
   */
   string get_name(int node){
     return Attributes[node].name;
@@ -227,6 +278,9 @@ class Graph {
   Retun duration of node, could be 0 also
   arg:  u -- index of node
   */
+  /*
+  Time Complexity: O(1)
+  */
   int get_duration(int u){
     return Attributes[u].duration;
   }
@@ -234,6 +288,9 @@ class Graph {
   /*
   Check if given node is dummy start
   arg:  v -- index of node
+  */
+  /*
+  Time Complexity: O(1)
   */
   bool is_initial(int v){
     return Attributes[v].is_initial;
@@ -243,12 +300,18 @@ class Graph {
   Check if given node is dummy terminal
   arg:  v -- index of node
   */
+  /*
+  Time Complexity: O(1)
+  */
   bool is_terminal(int v){
     return Attributes[v].is_terminal;
   }
 
   /*
   Return a topological order of the graph
+  */
+  /*
+  Time Complexity: O(1)
   */
   vector<int> get_top_order(){
     return top_order;
@@ -263,6 +326,9 @@ class Graph {
   arg:  node -- ID of the activity
         name -- name of the activity
   */
+  /*
+  Time Complexity: O(1)
+  */
   void set_name(int node, string name){    
     node = 3*(node)+1;
     Attributes[node].name = name;
@@ -273,6 +339,9 @@ class Graph {
   arg:  node -- index of the node
         duration -- duration of the node
   */
+  /*
+  Time Complexity: O(1)
+  */
   void set_duration(int node, int duration){
     Attributes[node].duration = duration;
   }
@@ -280,6 +349,9 @@ class Graph {
   /*
   Set flag for dummy start node
   arg:  node -- index of the node        
+  */
+  /*
+  Time Complexity: O(1)
   */
   void set_initial(int node){
     Attributes[node].is_initial = true;
@@ -289,6 +361,9 @@ class Graph {
   Set flag for dummy terminal node
   arg:  node -- index of the node        
   */
+  /*
+  Time Complexity: O(1)
+  */
   void set_terminal(int node){
     Attributes[node].is_terminal = true;
   }
@@ -296,6 +371,9 @@ class Graph {
   //---------------end of setter functions-------------------
 
   // The function to do Topological Sort.
+  /*
+  Time Complexity: O(n + m)
+  */
   void topologicalSort()
   {
     int V = Nvertices;    
@@ -357,17 +435,20 @@ class Graph {
   arg:  node-- index of the node from which invariant has to corrected
         start-- distance between current node and last node from which invariant is broken                
   */
-  void set_invariant_fwd_parse(int node, int start){
+  /*
+  Time Complexity: O(mlogn)
+  */
+  void set_invariant_fwd_parse(int node, vector<bool> visited, int start){
     /*
     Traverses backwards in the graph until a node with no predecessor is found.
     Start forward parse from that node,
     with start as distance between that node and the node from which invariant is broken.
     */
     if(Rev_AdjList[node].empty()){      
-      forward_parse(node, start);
+      forward_parse(node, visited, start);
     }
     for(int v: Rev_AdjList[node]){      
-      set_invariant_fwd_parse(v,start - Attributes[v].duration);
+      set_invariant_fwd_parse(v,visited, start - Attributes[v].duration);
     }    
   }
 
@@ -376,12 +457,15 @@ class Graph {
   arg:  u-- index of the source node
         start-- baseline/start of the node
   */
-  void forward_parse(int u, int start = 0){  
+  /*
+  Time Complexity: O(m^2 log n)
+  */
+  void forward_parse(int u, vector<bool>visited, int start = 0){  
     /*
     For every outgoing vertex of u,
     v.ES = max(v.ES, u.EF) and v.EF = max(v.EF, u.EF+v.duration)    
     */
-
+    visited[u] = true;
     Attributes[u].early_start = max(start,Attributes[u].early_start);
     Attributes[u].early_finish = max(start + Attributes[u].duration ,Attributes[u].early_finish);
     
@@ -393,25 +477,29 @@ class Graph {
     if( Attributes[u].is_terminal ){
       if(Attributes[u-1].early_finish != Attributes[u].early_start){
         //vertex (u-1) must start with u.ES- (u-1).duration
-        set_invariant_fwd_parse(u-1, Attributes[u].early_start - Attributes[u-1].duration);              
+        set_invariant_fwd_parse(u-1, visited, Attributes[u].early_start - Attributes[u-1].duration);              
       }
     }
     
     for(int v: AdjList_of_Vertices[u]){      
-      forward_parse(v,Attributes[u].early_finish);
+      forward_parse(v,visited, Attributes[u].early_finish);
     }
   }
   
   /*
   Function to invoke forward parsing in topological order
   */
+  /*
+  Time Complexity: O(nm^2 log n)
+  */
   void critical_path(){
     //source node is the first node in topological ordering
     Attributes[top_order[0]].early_start = 0;    
     Attributes[top_order[0]].early_finish = 0;
-    
+    vector<bool> visited(Nvertices, false);
     for(int u: top_order ){
-      forward_parse(u);    
+      if(!visited[u])
+        forward_parse(u, visited);    
     }
   }
 
@@ -425,7 +513,10 @@ class Graph {
   arg:  node-- index of the node from which invariant has to corrected
         start-- distance between current node and last node from which invariant is broken                
   */
-  void set_invariant_bkwd_parse(int node, int LF){ 
+  /*
+  Time Complexity: O(mlog n)
+  */
+  void set_invariant_bkwd_parse(int node, vector<bool> visited, int LF){ 
     /*
     Traverses forwards in the graph until a node with no successor is found.
     Start backward parse from that node,
@@ -433,10 +524,10 @@ class Graph {
     */
   
     if(AdjList_of_Vertices[node].empty()){      
-      backward_parse(node, LF);
+      backward_parse(node,visited, LF);
     }
     for(int v: AdjList_of_Vertices[node]){      
-      set_invariant_bkwd_parse(v,LF + Attributes[v].duration);
+      set_invariant_bkwd_parse(v,visited,LF + Attributes[v].duration);
     }    
   }
 
@@ -445,36 +536,44 @@ class Graph {
   arg:  u-- index of the source node
         start-- finish date of the node
   */
-  void backward_parse(int u, int end ){    
+  /*
+  Time Complexity: O(m^2 log n)
+  */
+  void backward_parse(int u, vector<bool> visited, int end ){    
+    visited[u] = true;
     Attributes[u].late_start = min(end-Attributes[u].duration, Attributes[u].late_start);
     Attributes[u].late_finish = min(end, Attributes[u].late_finish);
 
     if( Attributes[u].is_initial ){
       if(Attributes[u].late_finish != Attributes[u+1].late_start){    
-        set_invariant_bkwd_parse(u+1, Attributes[u].late_finish + Attributes[u+1].duration);              
+        set_invariant_bkwd_parse(u+1, visited, Attributes[u].late_finish + Attributes[u+1].duration);              
       }
     }
 
     //v is connected to u in the original graph
     for(int v: Rev_AdjList[u]){        
-      backward_parse(v, Attributes[u].late_start);
+      backward_parse(v, visited, Attributes[u].late_start);
     }    
   }
 
   /*
   Function to invoke backward parsing in reverse topological order
   */
+  /*
+  Time Complexity: O(m^2 nlog n)
+  */
   void compute_late_dates(int len){
     vector<int> rev_topo = top_order;
     reverse(rev_topo.begin(), rev_topo.end());
-
     for(int u: Vertices){
       Attributes[u].late_start = len- Attributes[u].duration;;
       Attributes[u].late_finish = len ;
     }
+    vector<bool> visited(Nvertices, false);
 
     for(int u: rev_topo ){   
-      backward_parse(u,len);
+      if(!visited[u])
+        backward_parse(u,visited, len);
       //cout<<endl<<endl;
     }
   }
