@@ -5,8 +5,10 @@ class Graph {
   private:
   set < int > Vertices;                                           //vertex index starts from 1
   set < pair < int, int > > Edges;                                //<u,v>  
-  map < int, set < int > > AdjList_of_Vertices;                   // <u, {v| (u,v)eE} >  
-  map < int, set<int> > Rev_AdjList;                              // <v, {u| (u,v)eE} >
+  unordered_map < int, set < int > > AdjList_of_Vertices;                   // <u, {v| (u,v)eE} >  
+  unordered_map < int, set<int> > Rev_AdjList;                              // <v, {u| (u,v)eE} >
+  
+
   public:
   int Nvertices;                                          //n
 
@@ -22,9 +24,7 @@ class Graph {
 
   //constructor
   /*
-  Time Complexity: O(nlogn) where n is number of vertices
-    vector push back: amortized O(1)
-    map insert: O(logn)
+  Time Complexity: O(n) where n is number of vertices    
   */
   Graph(int Nvertices) {
     this-> Nvertices = Nvertices;    
@@ -44,7 +44,7 @@ class Graph {
         v -- index of terminal vertex
   */
   /*
-  Time Complexity: O(log m) where m is the number of edges
+  Time Complexity: O(1) 
   */
   void insert_edge(int u, int v) {    
     pair<int, int> edge = make_pair(u,v); 
@@ -57,7 +57,7 @@ class Graph {
   arg:  u -- key of node
   */
   /*
-  Time Complexity: O(logn)
+  Time Complexity: O(1)
   */
   void insert_vertex(int u){
     Vertices.insert(u);
@@ -74,7 +74,7 @@ class Graph {
   arg:  u -- key of node to be deleted
   */
   /*
-  Time Complexity: O(log n) 
+  Time Complexity: O(1) 
   */
   void remove_vertex(int u){
     set<int>::iterator it;
@@ -94,7 +94,7 @@ class Graph {
         v -- key of dest node
   */
   /*
-  Time Complexity: O(log m)
+  Time Complexity: O(1)
   */
   void remove_edge(int u, int v){
     set<pair<int,int> >::iterator it;
@@ -114,7 +114,7 @@ class Graph {
         dur -- duration of the activity
   */
   /*
-  Time Complexity: O(log mn )
+  Time Complexity: O(1)
   */
   void add_activity(int index, int dur=0){
     
@@ -145,7 +145,7 @@ class Graph {
   arg:  u -- ID of activity to be removed
   */
   /*
-  Time Complexity: O(log mn)
+  Time Complexity: O(1)
   */
   void remove_activity(int u){          
     remove_vertex(3*u);
@@ -161,7 +161,7 @@ class Graph {
         v -- key of dest node
   */
   /*
-  Time Complexity: O(log mn)
+  Time Complexity: O(1)
   */
   void connect(int u, int v){
     insert_edge(u, v);
@@ -175,7 +175,7 @@ class Graph {
         v-- index of dest vertex
   */
   /*
-  Time Complexity: O(log n)
+  Time Complexity: O(1)
   */ 
   void insert_reverse_adj(int u, int v){
     Rev_AdjList[v].insert(u);    
@@ -213,7 +213,7 @@ class Graph {
   arg:  vertex -- index of vertex whose neighbours is queried 
   */
   /*
-  Time Complexity: O( log n)
+  Time Complexity: O(1)
   */
   set < int > get_adjList(int vertex){ 
     return AdjList_of_Vertices[vertex];
@@ -436,7 +436,7 @@ class Graph {
         start-- distance between current node and last node from which invariant is broken                
   */
   /*
-  Time Complexity: O(mlogn)
+  Time Complexity: O(m)
   */
   void set_invariant_fwd_parse(int node, vector<bool> visited, int start){
     /*
@@ -458,7 +458,7 @@ class Graph {
         start-- baseline/start of the node
   */
   /*
-  Time Complexity: O(m^2 log n)
+  Time Complexity: O(m^2)
   */
   void forward_parse(int u, vector<bool>visited, int start = 0){  
     /*
@@ -490,7 +490,7 @@ class Graph {
   Function to invoke forward parsing in topological order
   */
   /*
-  Time Complexity: O(m^2 log n)
+  Time Complexity: O(m^2)
   */
   void critical_path(){
     //source node is the first node in topological ordering
@@ -514,7 +514,7 @@ class Graph {
         start-- distance between current node and last node from which invariant is broken                
   */
   /*
-  Time Complexity: O(mlog n)
+  Time Complexity: O(m)
   */
   void set_invariant_bkwd_parse(int node, vector<bool> visited, int LF){ 
     /*
@@ -537,7 +537,7 @@ class Graph {
         start-- finish date of the node
   */
   /*
-  Time Complexity: O(m^2 log n)
+  Time Complexity: O(m^2 )
   */
   void backward_parse(int u, vector<bool> visited, int end ){    
     visited[u] = true;
@@ -560,7 +560,7 @@ class Graph {
   Function to invoke backward parsing in reverse topological order
   */
   /*
-  Time Complexity: O(m^2 log n)
+  Time Complexity: O(m^2 )
   */
   void compute_late_dates(int len){
     vector<int> rev_topo = top_order;
