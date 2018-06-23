@@ -40,6 +40,7 @@ Input files are
 input/tasks.csv
 input/relationships.csv
 input/calendar.csv
+input/bounds
 ```
 To run program
 ```

@@ -42,7 +42,14 @@ Calendar create_calendar(){
 }
 
 void print_early_start(Graph &g, Calendar cal){
-  Date d1(6, June, 2018);
+  
+  CSVReader reader("input/bounds.csv");
+  // Get the data from CSV File
+  vector<vector<string> > bounds = reader.getData();
+
+  Date d1 = get_date(bounds[0][0]);
+
+
   for(int u: g.vertices()){
     if((u+2)%3) continue;
     if(g.get_name(u) == "offset" || g.get_name(u) == "sink") continue;
@@ -60,7 +67,12 @@ void print_early_start(Graph &g, Calendar cal){
 }
 
 void print_late_dates(Graph &g, Calendar &cal){
-  Date d1(6, June, 2018);
+  CSVReader reader("input/bounds.csv");
+  // Get the data from CSV File
+  vector<vector<string> > bounds = reader.getData();
+
+  Date d1 = get_date(bounds[0][0]);
+
   for(int u: g.vertices()){
     if((u+2)%3) continue;
     if(g.get_name(u) == "offset" || g.get_name(u) == "sink") continue;
@@ -85,8 +97,11 @@ void write_output(Graph &g, Calendar &cal){
   activity_name, early_start, early_finish, late_start, late_finish, slack
   */
   //all dates in yyyy-mm-dd format   
+  CSVReader reader("input/bounds.csv");
+  // Get the data from CSV File
+  vector<vector<string> > bounds = reader.getData();
 
-  Date d1(6, June, 2018);
+  Date d1 = get_date(bounds[0][0]);
   for(int u: g.vertices()){
     if((u+2)%3) continue;
     if(g.get_name(u) == "offset" || g.get_name(u) == "sink") continue;
@@ -288,14 +303,23 @@ int main() {
   
   g.topologicalSort();  
   g.critical_path();
-  Calendar cal = create_calendar();    
+   
   //print_early_start(g, cal);  
-  
-  int length = find_length(g);  
 
+  CSVReader boundsReader("input/bounds.csv");
+  // Get the data from CSV File
+  vector<vector<string> > bounds = boundsReader.getData();
+  
+  Date start_date = get_date(bounds[0][0]);
+  Date end_date = get_date(bounds[1][0]);
+
+  int length = find_length(g);  
+  //assert(length == end_date-start_date);
+  cout<<length<<" "<<end_date-start_date<<endl;
   g.compute_late_dates(length);
   //print_late_dates(g,cal);
 
+  Calendar cal = create_calendar();   
   write_output(g,cal);
   return 0;
 }

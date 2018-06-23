@@ -419,9 +419,10 @@ class Graph {
     // Check if there was a cycle
     if (cnt != V){
       cout << "There exists a cycle in the graph\n";
+      exit(EXIT_FAILURE);
       return;
     }
-    */   
+   */    
   }  
 
 
@@ -432,24 +433,18 @@ class Graph {
             EF(activity)=ES(activity)+duration(activity)
             EF(activity)=ES(dummy finish)
   
-  arg:  node-- index of the node from which invariant has to corrected
-        start-- distance between current node and last node from which invariant is broken                
+  arg:  u-- index of the node from which invariant has to corrected        
   */
-  /*
-  Time Complexity: O(m)
-  */
-  void set_invariant_fwd_parse(int node, vector<bool> visited, int start){
-    /*
-    Traverses backwards in the graph until a node with no predecessor is found.
-    Start forward parse from that node,
-    with start as distance between that node and the node from which invariant is broken.
-    */
-    if(Rev_AdjList[node].empty()){      
-      forward_parse(node, visited, start);
-    }
-    for(int v: Rev_AdjList[node]){      
-      set_invariant_fwd_parse(v,visited, start - Attributes[v].duration);
-    }    
+
+  void set_invariant_fwd_parse(int u){
+  //u is terminal node    
+    assert(Attributes[u].is_terminal);
+
+    Attributes[u-1].early_finish = Attributes[u].early_start;
+    Attributes[u-1].early_start = Attributes[u-1].early_finish - Attributes[u-1].duration;
+
+    Attributes[u-2].early_finish = Attributes[u-1].early_start;
+    Attributes[u-2].early_start = Attributes[u-2].early_finish - Attributes[u-2].duration;    
   }
 
   /*
@@ -457,18 +452,19 @@ class Graph {
   arg:  u-- index of the source node
         start-- baseline/start of the node
   */
-  /*
-  Time Complexity: O(m^2)
-  */
-  void forward_parse(int u, vector<bool>visited, int start = 0){  
+  
+  void forward_parse(int u, vector<bool>visited){  
     /*
-    For every outgoing vertex of u,
-    v.ES = max(v.ES, u.EF) and v.EF = max(v.EF, u.EF+v.duration)    
+    For every incoming vertex v of u,
+    u.ES = max(u.ES, v.EF) and u.EF = max(u.EF, v.EF+v.duration)    
     */
     visited[u] = true;
-    Attributes[u].early_start = max(start,Attributes[u].early_start);
-    Attributes[u].early_finish = max(start + Attributes[u].duration ,Attributes[u].early_finish);
-    
+
+    for(int v: Rev_AdjList[u]){
+      Attributes[u].early_start = max(Attributes[v].early_finish,Attributes[u].early_start);
+      Attributes[u].early_finish = max(Attributes[u].early_start + Attributes[u].duration, 
+                                       Attributes[u].early_finish);
+    }
     /*
     if u is a dummy terminal node,(FF or SF dependency),
     invariant property could be broken.
@@ -476,27 +472,21 @@ class Graph {
     */
     if( Attributes[u].is_terminal ){
       if(Attributes[u-1].early_finish != Attributes[u].early_start){
-        //vertex (u-1) must start with u.ES- (u-1).duration
-        set_invariant_fwd_parse(u-1, visited, Attributes[u].early_start - Attributes[u-1].duration);              
+        set_invariant_fwd_parse(u);              
       }
     }
-    
-    for(int v: AdjList_of_Vertices[u]){      
-      forward_parse(v,visited, Attributes[u].early_finish);
-    }
+        
   }
   
   /*
   Function to invoke forward parsing in topological order
   */
-  /*
-  Time Complexity: O(m^2)
-  */
   void critical_path(){
     //source node is the first node in topological ordering
     Attributes[top_order[0]].early_start = 0;    
-    Attributes[top_order[0]].early_finish = 0;
+    Attributes[top_order[0]].early_finish = Attributes[top_order[0]].duration;
     vector<bool> visited(Nvertices, false);
+
     for(int u: top_order ){
       if(!visited[u])
         forward_parse(u, visited);    
@@ -510,25 +500,19 @@ class Graph {
             LF(activity)=LS(activity)+duration(activity)
             LF(activity)=LS(dummy finish)
   
-  arg:  node-- index of the node from which invariant has to corrected
-        start-- distance between current node and last node from which invariant is broken                
+  arg:  u-- index of the node from which invariant has to corrected        
   */
   /*
-  Time Complexity: O(m)
+  Time Complexity: O(1)
   */
-  void set_invariant_bkwd_parse(int node, vector<bool> visited, int LF){ 
-    /*
-    Traverses forwards in the graph until a node with no successor is found.
-    Start backward parse from that node,
-    with parameter as distance between that node and the node from which invariant is broken.
-    */
-  
-    if(AdjList_of_Vertices[node].empty()){      
-      backward_parse(node,visited, LF);
-    }
-    for(int v: AdjList_of_Vertices[node]){      
-      set_invariant_bkwd_parse(v,visited,LF + Attributes[v].duration);
-    }    
+  void set_invariant_bkwd_parse(int u){ 
+  // u is initial node
+    assert(Attributes[u].is_initial);
+    Attributes[u+1].late_start = Attributes[u].late_finish;
+    Attributes[u+1].late_finish = Attributes[u+1].late_start + Attributes[u+1].duration;
+
+    Attributes[u+2].late_start = Attributes[u+1].late_finish;
+    Attributes[u+2].late_finish = Attributes[u+2].late_start + Attributes[u+2].duration;    
   }
 
   /*
@@ -536,32 +520,28 @@ class Graph {
   arg:  u-- index of the source node
         start-- finish date of the node
   */
-  /*
-  Time Complexity: O(m^2 )
-  */
-  void backward_parse(int u, vector<bool> visited, int end ){    
-    visited[u] = true;
-    Attributes[u].late_start = min(end-Attributes[u].duration, Attributes[u].late_start);
-    Attributes[u].late_finish = min(end, Attributes[u].late_finish);
 
+  void backward_parse(int u, vector<bool> visited ){    
+    visited[u] = true;
+    /*
+    For every outgoing vertex v of u,
+    u.LS = min(u.LS, v.LF-u.duration) and u.LF = min(u.LF, v.LF)    
+    */
+    for(int v: AdjList_of_Vertices[u]){
+      Attributes[u].late_start = min(Attributes[v].late_start-Attributes[u].duration, Attributes[u].late_start);
+      Attributes[u].late_finish = min(Attributes[v].late_start, Attributes[u].late_finish);
+    }
     if( Attributes[u].is_initial ){
       if(Attributes[u].late_finish != Attributes[u+1].late_start){    
-        set_invariant_bkwd_parse(u+1, visited, Attributes[u].late_finish + Attributes[u+1].duration);              
+        set_invariant_bkwd_parse(u);              
       }
     }
-
-    //v is connected to u in the original graph
-    for(int v: Rev_AdjList[u]){        
-      backward_parse(v, visited, Attributes[u].late_start);
-    }    
   }
 
   /*
   Function to invoke backward parsing in reverse topological order
   */
-  /*
-  Time Complexity: O(m^2 )
-  */
+
   void compute_late_dates(int len){
     vector<int> rev_topo = top_order;
     reverse(rev_topo.begin(), rev_topo.end());
@@ -573,7 +553,7 @@ class Graph {
 
     for(int u: rev_topo ){   
       if(!visited[u])
-        backward_parse(u,visited, len);
+        backward_parse(u,visited);
       //cout<<endl<<endl;
     }
   }
