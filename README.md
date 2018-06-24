@@ -5,8 +5,8 @@ Project planning software.
 ## TODO
 Fix calendar operations
 ```
-change weekly working days.(Currently, Sat and Sun always holidays)
-Start date of project is hard coded.
+change weekly working days.(Currently, Sat and Sun always holidays).
+create activity calendars.
 ```
 Account for in-progress activities.
 ```
@@ -40,7 +40,7 @@ Input files are
 input/tasks.csv
 input/relationships.csv
 input/calendar.csv
-input/bounds
+input/bounds.csv
 ```
 To run program
 ```

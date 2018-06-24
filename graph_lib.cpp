@@ -415,14 +415,14 @@ class Graph {
       
       cnt++;
     }
-   /*
+        
     // Check if there was a cycle
-    if (cnt != V){
+    if (cnt != Vertices.size()){
       cout << "There exists a cycle in the graph\n";
       exit(EXIT_FAILURE);
       return;
     }
-   */    
+       
   }  
 
 

@@ -305,7 +305,7 @@ int main() {
   g.critical_path();
    
   //print_early_start(g, cal);  
-
+  Calendar cal = create_calendar();   
   CSVReader boundsReader("input/bounds.csv");
   // Get the data from CSV File
   vector<vector<string> > bounds = boundsReader.getData();
@@ -313,13 +313,12 @@ int main() {
   Date start_date = get_date(bounds[0][0]);
   Date end_date = get_date(bounds[1][0]);
 
-  int length = find_length(g);  
-  //assert(length == end_date-start_date);
-  cout<<length<<" "<<end_date-start_date<<endl;
-  g.compute_late_dates(length);
-  //print_late_dates(g,cal);
-
-  Calendar cal = create_calendar();   
+  int min_length = find_length(g);  
+  int proj_duration = cal.businessDaysBetween(start_date, end_date, true, true);
+  assert(min_length <= proj_duration);
+  g.compute_late_dates(proj_duration);
+  
+  
   write_output(g,cal);
   return 0;
 }
